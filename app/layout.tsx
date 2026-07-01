@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,8 +16,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kharhy Studio",
-  description: "Building digital products, websites, and AI-powered tools.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Print Layout Toolkit",
+    template: "%s | Print Layout Toolkit",
+  },
+  description:
+    "Free print calculators and layout tools for paper sizes, DPI, booklets, posters, margins, bleed, and more.",
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -27,7 +39,11 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex min-h-full flex-col bg-slate-50 text-slate-900">
+        <Header />
+        <div className="flex-1">{children}</div>
+        <Footer />
+      </body>
     </html>
   );
 }
