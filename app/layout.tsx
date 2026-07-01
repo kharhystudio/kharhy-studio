@@ -4,6 +4,7 @@ import { AnalyticsScripts } from "@/components/AnalyticsScripts";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { JsonLd } from "@/components/JsonLd";
+import { LanguageProvider } from "@/components/LanguageProvider";
 import { googleSiteVerification, siteUrl } from "@/lib/site";
 import { websiteSchema } from "@/lib/seo";
 import "./globals.css";
@@ -71,11 +72,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col overflow-x-hidden bg-slate-50 text-slate-900">
-        <JsonLd data={websiteSchema()} />
-        <AnalyticsScripts />
-        <Header />
-        <div className="flex-1">{children}</div>
-        <Footer />
+        <LanguageProvider>
+          <JsonLd data={websiteSchema()} />
+          <AnalyticsScripts />
+          <Header />
+          <div className="flex-1">{children}</div>
+          <Footer />
+        </LanguageProvider>
       </body>
     </html>
   );

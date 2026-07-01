@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { guides } from "@/lib/guides";
+import { contactEmail } from "@/lib/site";
 import { toolCategories, tools } from "@/lib/tools";
 
 export function Footer() {
@@ -55,6 +56,12 @@ export function Footer() {
               </li>
             ))}
           </ul>
+          <p className="mt-3 text-sm text-slate-600">
+            Email:{" "}
+            <a className="hover:text-cyan-700" href={`mailto:${contactEmail}`}>
+              {contactEmail}
+            </a>
+          </p>
           <p className="mt-6 font-semibold text-slate-950">Categories</p>
           <ul className="mt-3 space-y-2 text-sm text-slate-600">
             {toolCategories.map((category) => (

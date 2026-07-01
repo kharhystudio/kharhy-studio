@@ -43,10 +43,10 @@ Add your custom domain in the Vercel project settings, update DNS as Vercel inst
 The public contact email is configured in `lib/site.ts`:
 
 ```ts
-NEXT_PUBLIC_CONTACT_EMAIL=hello@example.com
+NEXT_PUBLIC_CONTACT_EMAIL=kharhystudio@gmail.com
 ```
 
-Replace `hello@example.com` before publishing.
+Replace `kharhystudio@gmail.com` if you want contact email to go somewhere else.
 
 ## Search Console
 

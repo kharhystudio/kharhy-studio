@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { LogoMark } from "@/components/LogoMark";
 
 const links = [
@@ -18,13 +19,16 @@ export function Header() {
             Print Layout Toolkit
           </span>
         </Link>
-        <nav className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600 md:gap-6">
-          {links.map((link) => (
-            <Link className="transition hover:text-cyan-700" href={link.href} key={link.href}>
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-wrap items-center gap-4 md:justify-end md:gap-6">
+          <nav className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600 md:gap-6">
+            {links.map((link) => (
+              <Link className="transition hover:text-cyan-700" href={link.href} key={link.href}>
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <LanguageSwitcher />
+        </div>
       </div>
     </header>
   );
