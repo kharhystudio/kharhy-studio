@@ -1,4 +1,8 @@
-export type ToolCategory = "Image & DPI" | "Paper & Layout" | "Posters & Booklets";
+export type ToolCategory =
+  | "Image & DPI"
+  | "Paper & Layout"
+  | "Posters & Booklets"
+  | "Writing & Text";
 
 export type Tool = {
   slug: string;
@@ -24,6 +28,7 @@ export const toolCategories: ToolCategory[] = [
   "Image & DPI",
   "Paper & Layout",
   "Posters & Booklets",
+  "Writing & Text",
 ];
 
 const standardFaqs = {
@@ -600,6 +605,47 @@ export const tools: Tool[] = [
       ],
     },
     faqs: standardFaqs.print,
+  },
+  {
+    slug: "word-counter",
+    aliases: ["words-counter"],
+    title: "Word Counter",
+    category: "Writing & Text",
+    featured: true,
+    description:
+      "Count words, characters, sentences, paragraphs, and estimated reading time from pasted text.",
+    metaDescription:
+      "Free word counter for counting words, characters, sentences, paragraphs, and estimated reading time in your browser.",
+    howToUse: [
+      "Paste or type your text into the box.",
+      "Review the instant word, character, sentence, and paragraph counts.",
+      "Use Reset to clear the text or Copy result to save the summary.",
+    ],
+    useCases: [
+      "Checking article length",
+      "Preparing print copy",
+      "Estimating reading time",
+      "Keeping text within layout limits",
+    ],
+    education: {
+      heading: "Why word count helps print layouts",
+      paragraphs: [
+        "Text length affects page count, column height, and how comfortably content fits inside a design.",
+        "A word counter helps you check copy before placing it into a flyer, booklet, poster, label, or website layout.",
+      ],
+    },
+    faqs: [
+      {
+        question: "Does this upload my text?",
+        answer:
+          "No. The word counter runs in your browser and does not upload or save the text you type.",
+      },
+      {
+        question: "How is reading time estimated?",
+        answer:
+          "Reading time is estimated using about 200 words per minute, which is a common general-purpose reading speed.",
+      },
+    ],
   },
 ];
 

@@ -119,6 +119,7 @@ No ad blocks or placeholders are included. Update the Privacy Policy before enab
 - `/book-spine-width-calculator`
 - `/label-sheet-calculator`
 - `/photo-print-layout-calculator`
+- `/word-counter`
 
 Older compatibility routes under `/tools/[slug]` also work, but the canonical URLs are the root tool routes above.
 

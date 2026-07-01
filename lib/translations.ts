@@ -79,6 +79,7 @@ const jaText: Record<string, string> = {
   "Image & DPI": "画像とDPI",
   "Paper & Layout": "用紙とレイアウト",
   "Posters & Booklets": "ポスターと小冊子",
+  "Writing & Text": "文章とテキスト",
 
   "DPI Calculator": "DPI計算ツール",
   "Pixels to Inches Converter": "ピクセルからインチ変換",
@@ -103,6 +104,7 @@ const jaText: Record<string, string> = {
   "Book Spine Width Calculator": "本の背幅計算ツール",
   "Label Sheet Calculator": "ラベルシート計算ツール",
   "Photo Print Layout Calculator": "写真印刷レイアウト計算ツール",
+  "Word Counter": "文字数・単語数カウンター",
 
   "Calculate print size from pixels and DPI, or required pixels from print size and DPI.":
     "ピクセル数とDPIから印刷サイズを計算し、また印刷サイズとDPIから必要なピクセル数を計算します。",
@@ -150,6 +152,8 @@ const jaText: Record<string, string> = {
     "余白と間隔を使って、1ページに入るラベル数を計算します。",
   "Calculate how many photos of a selected size fit on a selected paper size.":
     "選択した写真サイズが選択した用紙に何枚入るか計算します。",
+  "Count words, characters, sentences, paragraphs, and estimated reading time from pasted text.":
+    "貼り付けたテキストの単語数、文字数、文数、段落数、推定読書時間を数えます。",
 
   "Choose whether you know pixels or print size.": "ピクセル数または印刷サイズのどちらを知っているか選びます。",
   "Enter your width, height, and DPI.": "幅、高さ、DPIを入力します。",
@@ -170,6 +174,26 @@ const jaText: Record<string, string> = {
   "Do these tools upload my files?": "これらのツールはファイルをアップロードしますか？",
   "No. The calculators use typed dimensions and run in your browser. They do not upload images or documents.":
     "いいえ。計算ツールは入力された寸法だけを使ってブラウザー上で動作し、画像や文書をアップロードしません。",
+  "Paste or type your text into the box.": "ボックスにテキストを貼り付けるか入力します。",
+  "Review the instant word, character, sentence, and paragraph counts.":
+    "単語数、文字数、文数、段落数をすぐ確認します。",
+  "Use Reset to clear the text or Copy result to save the summary.":
+    "リセットでテキストを消去し、結果をコピーで概要を保存できます。",
+  "Checking article length": "記事の長さ確認",
+  "Preparing print copy": "印刷用コピーの準備",
+  "Estimating reading time": "読書時間の見積もり",
+  "Keeping text within layout limits": "レイアウト内に文章を収める",
+  "Why word count helps print layouts": "単語数が印刷レイアウトに役立つ理由",
+  "Text length affects page count, column height, and how comfortably content fits inside a design.":
+    "文章の長さはページ数、段組みの高さ、デザイン内での収まりやすさに影響します。",
+  "A word counter helps you check copy before placing it into a flyer, booklet, poster, label, or website layout.":
+    "単語数カウンターを使うと、チラシ、小冊子、ポスター、ラベル、Webレイアウトに文章を配置する前に長さを確認できます。",
+  "Does this upload my text?": "入力したテキストはアップロードされますか？",
+  "No. The word counter runs in your browser and does not upload or save the text you type.":
+    "いいえ。単語数カウンターはブラウザー上で動作し、入力したテキストをアップロードしたり保存したりしません。",
+  "How is reading time estimated?": "読書時間はどのように見積もりますか？",
+  "Reading time is estimated using about 200 words per minute, which is a common general-purpose reading speed.":
+    "読書時間は一般的な目安として1分あたり約200語で見積もります。",
 
   "DPI vs PPI Guide": "DPIとPPIガイド",
   "Print Bleed Guide": "印刷の塗り足しガイド",
@@ -453,6 +477,23 @@ const jaText: Record<string, string> = {
   "Estimated sheet thickness": "推定紙厚",
   "This is only a planning estimate. Actual paper thickness varies by stock, coating, humidity, and printer.":
     "これは計画用の見積もりです。実際の紙厚は用紙、コーティング、湿度、プリンターによって変わります。",
+  "Count words, characters, sentences, paragraphs, and estimated reading time.":
+    "単語数、文字数、文数、段落数、推定読書時間を数えます。",
+  "Text to count": "数えるテキスト",
+  "Paste or type your text here...": "ここにテキストを貼り付けるか入力してください...",
+  "Your text stays in your browser. Results update instantly.":
+    "テキストはブラウザー内に残ります。結果はすぐ更新されます。",
+  "Text summary": "テキスト概要",
+  Words: "単語数",
+  Characters: "文字数",
+  "Characters without spaces": "スペースを除いた文字数",
+  Sentences: "文数",
+  Paragraphs: "段落数",
+  "Estimated reading time": "推定読書時間",
+  "Less than 1 minute": "1分未満",
+  "0 minutes": "0分",
+  "Paste your text here to count words, characters, sentences, paragraphs, and estimated reading time.":
+    "単語数、文字数、文数、段落数、推定読書時間を数えるには、ここにテキストを貼り付けてください。",
 
   "About Print Layout Toolkit": "Print Layout Toolkitについて",
   "Learn about Print Layout Toolkit, a browser-based collection of practical print calculators and guides.":
@@ -492,6 +533,7 @@ const dynamicReplacements: Array<[RegExp, string]> = [
   [/\bImage & DPI\b/g, "画像とDPI"],
   [/\bPaper & Layout\b/g, "用紙とレイアウト"],
   [/\bPosters & Booklets\b/g, "ポスターと小冊子"],
+  [/\bWriting & Text\b/g, "文章とテキスト"],
   [/\bA series\b/g, "A判"],
   [/\bB series\b/g, "B判"],
   [/\bPhoto\b/g, "写真"],
@@ -507,6 +549,12 @@ const dynamicReplacements: Array<[RegExp, string]> = [
   [/\bblanks\b/g, "白紙"],
   [/\btools\b/g, "ツール"],
   [/\btool\b/g, "ツール"],
+  [/\bWords\b/g, "単語数"],
+  [/\bCharacters\b/g, "文字数"],
+  [/\bSentences\b/g, "文数"],
+  [/\bParagraphs\b/g, "段落数"],
+  [/\bminutes\b/g, "分"],
+  [/\bminute\b/g, "分"],
   [/\bper sheet\b/g, "/シート"],
   [/\bLeft and right sides\b/g, "左右"],
   [/\bTop and bottom\b/g, "上下"],

@@ -32,6 +32,7 @@ import {
   toInches,
   type Unit,
 } from "@/lib/printMath";
+import { countTextStats, formatReadingTime } from "@/lib/textStats";
 
 type CalculatorRendererProps = {
   slug: string;
@@ -824,6 +825,58 @@ function BookSpineWidthCalculator() {
   );
 }
 
+function WordCounter() {
+  const [text, setText] = useState("");
+  const result = countTextStats(text);
+  const copyText = `Words: ${result.words}; Characters: ${result.characters}; Characters without spaces: ${result.charactersNoSpaces}; Sentences: ${result.sentences}; Paragraphs: ${result.paragraphs}; Reading time: ${formatReadingTime(result.readingMinutes)}`;
+
+  return (
+    <CalculatorCard
+      title="Word Counter"
+      description="Count words, characters, sentences, paragraphs, and estimated reading time."
+    >
+      <div>
+        <label className="block text-sm font-semibold text-slate-800" htmlFor="word-counter-text">
+          Text to count
+        </label>
+        <textarea
+          className="mt-2 min-h-56 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-cyan-600 focus:ring-4 focus:ring-cyan-100"
+          id="word-counter-text"
+          onChange={(event) => setText(event.target.value)}
+          placeholder="Paste or type your text here..."
+          value={text}
+        />
+        <p className="mt-1.5 text-sm leading-5 text-slate-500">
+          Your text stays in your browser. Results update instantly.
+        </p>
+      </div>
+
+      <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto]">
+        <ResultBox title="Text summary" tone="success">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <ResultLine label="Words" value={`${result.words}`} />
+            <ResultLine label="Characters" value={`${result.characters}`} />
+            <ResultLine
+              label="Characters without spaces"
+              value={`${result.charactersNoSpaces}`}
+            />
+            <ResultLine label="Sentences" value={`${result.sentences}`} />
+            <ResultLine label="Paragraphs" value={`${result.paragraphs}`} />
+            <ResultLine
+              label="Estimated reading time"
+              value={formatReadingTime(result.readingMinutes)}
+            />
+          </div>
+          <CopyButton text={copyText} />
+        </ResultBox>
+        <div className="md:self-start">
+          <ResetButton onClick={() => setText("")} />
+        </div>
+      </div>
+    </CalculatorCard>
+  );
+}
+
 function CalculatorResult({
   valid,
   title,
@@ -880,6 +933,7 @@ export function CalculatorRenderer({ slug }: CalculatorRendererProps) {
   if (slug === "book-spine-width-calculator") return <BookSpineWidthCalculator />;
   if (slug === "label-sheet-calculator") return <YieldCalculator labelMode="labels" />;
   if (slug === "photo-print-layout-calculator") return <PhotoPrintLayoutCalculator />;
+  if (slug === "word-counter") return <WordCounter />;
 
   return null;
 }

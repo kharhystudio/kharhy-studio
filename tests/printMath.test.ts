@@ -8,6 +8,7 @@ import {
   pixelToPrintSize,
   printSizeToPixels,
 } from "../lib/printMath.ts";
+import { countTextStats, formatReadingTime } from "../lib/textStats.ts";
 
 const printSize = pixelToPrintSize(3000, 2400, 300);
 assert.equal(printSize.widthIn, 10);
@@ -53,5 +54,11 @@ const spine = calculateSpineWidth({
   coverThicknessMm: 0.25,
 });
 assert.equal(spine, 10.5);
+
+const textStats = countTextStats("Hello print layout.\n\nThis is a test!");
+assert.equal(textStats.words, 7);
+assert.equal(textStats.sentences, 2);
+assert.equal(textStats.paragraphs, 2);
+assert.equal(formatReadingTime(textStats.readingMinutes), "Less than 1 minute");
 
 console.log("Calculation checks passed.");
