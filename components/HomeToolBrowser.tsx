@@ -51,7 +51,10 @@ export function HomeToolBrowser({ categories, tools }: HomeToolBrowserProps) {
           if (categoryTools.length === 0) return null;
 
           return (
-            <section key={category}>
+            <section
+              id={category.toLowerCase().replaceAll(" ", "-").replace("&", "and")}
+              key={category}
+            >
               <div className="mb-4 flex items-end justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-700">

@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { LogoMark } from "@/components/LogoMark";
 
 const links = [
   { href: "/#tools", label: "Tools" },
   { href: "/guides", label: "Guides" },
-  { href: "/#categories", label: "Categories" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function Header() {
@@ -11,9 +13,7 @@ export function Header() {
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
         <Link href="/" className="flex items-center gap-3">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-cyan-700 text-sm font-bold text-white">
-            PL
-          </span>
+          <LogoMark />
           <span className="text-base font-bold text-slate-950 sm:text-lg">
             Print Layout Toolkit
           </span>

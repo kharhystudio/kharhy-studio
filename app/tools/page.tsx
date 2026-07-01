@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import { ToolCard } from "@/components/ToolCard";
+import { pageMetadata } from "@/lib/seo";
 import { toolCategories, tools } from "@/lib/tools";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "All Print Tools",
   description:
     "Browse free print calculators for paper sizes, DPI, bleed, margins, booklets, posters, and layout planning.",
-};
+  path: "/tools",
+});
 
 export default function ToolsPage() {
   return (

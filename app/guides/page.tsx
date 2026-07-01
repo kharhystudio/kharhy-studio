@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { guides } from "@/lib/guides";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Print Guides",
   description:
     "Beginner-friendly print guides covering DPI, A4 vs Letter, bleed, booklet printing, and image preparation.",
-};
+  path: "/guides",
+});
 
 export default function GuidesPage() {
   return (
@@ -27,7 +28,7 @@ export default function GuidesPage() {
         {guides.map((guide) => (
           <Link
             className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-md"
-            href={`/guides/${guide.slug}`}
+            href={`/${guide.slug}`}
             key={guide.slug}
           >
             <h2 className="text-xl font-semibold text-slate-950">{guide.title}</h2>

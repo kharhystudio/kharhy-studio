@@ -5,7 +5,7 @@ export function ToolCard({ tool }: { tool: Tool }) {
   return (
     <Link
       className="group block rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-md"
-      href={`/tools/${tool.slug}`}
+      href={`/${tool.slug}`}
     >
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">
         {tool.category}
