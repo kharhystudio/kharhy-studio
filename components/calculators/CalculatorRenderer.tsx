@@ -70,10 +70,10 @@ function useToolSubmission<T extends Record<string, unknown>>(draftValues: T) {
     setIsProcessing(true);
     setSubmittedValues({ ...draftValues });
 
-    window.setTimeout(() => {
+    window.queueMicrotask(() => {
       processingRef.current = false;
       setIsProcessing(false);
-    }, 0);
+    });
   }
 
   function clear() {
