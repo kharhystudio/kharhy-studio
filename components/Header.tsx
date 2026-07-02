@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { LogoMark } from "@/components/LogoMark";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 const links = [
   { href: "/#tools", label: "Tools" },
@@ -27,6 +28,7 @@ export function Header() {
               </Link>
             ))}
           </nav>
+          <ThemeSwitcher />
           <LanguageSwitcher />
         </div>
       </div>

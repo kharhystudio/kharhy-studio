@@ -41,6 +41,9 @@ const jaText: Record<string, string> = {
   Guides: "ガイド",
   About: "概要",
   Contact: "お問い合わせ",
+  Theme: "テーマ",
+  Light: "ライト",
+  Dark: "ダーク",
   "All print calculators": "すべての印刷計算ツール",
   "Choose a calculator for paper sizes, DPI, print dimensions, bleed, margins, booklets, N-up layouts, posters, and aspect ratios.":
     "用紙サイズ、DPI、印刷寸法、塗り足し、余白、小冊子、面付け、ポスター、アスペクト比に使える計算ツールを選べます。",

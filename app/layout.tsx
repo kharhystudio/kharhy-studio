@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { JsonLd } from "@/components/JsonLd";
 import { LanguageProvider } from "@/components/LanguageProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { googleSiteVerification, siteUrl } from "@/lib/site";
 import { websiteSchema } from "@/lib/seo";
 import "./globals.css";
@@ -61,6 +62,20 @@ export const metadata: Metadata = {
     : undefined,
 };
 
+const themeInitScript = `
+  (function () {
+    try {
+      var theme = window.localStorage.getItem("print-layout-toolkit-theme");
+      if (theme !== "light" && theme !== "dark") theme = "light";
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme;
+    } catch (error) {
+      document.documentElement.dataset.theme = "light";
+      document.documentElement.style.colorScheme = "light";
+    }
+  })();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -69,16 +84,20 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col overflow-x-hidden bg-slate-50 text-slate-900">
-        <LanguageProvider>
-          <JsonLd data={websiteSchema()} />
-          <AnalyticsScripts />
-          <Header />
-          <div className="flex-1">{children}</div>
-          <Footer />
-        </LanguageProvider>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <ThemeProvider>
+          <LanguageProvider>
+            <JsonLd data={websiteSchema()} />
+            <AnalyticsScripts />
+            <Header />
+            <div className="flex-1">{children}</div>
+            <Footer />
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
