@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRef, useState } from "react";
 import { CalculatorCard } from "@/components/CalculatorCard";
 import { CopyButton } from "@/components/CopyButton";
 import { InputField } from "@/components/InputField";
@@ -58,6 +58,58 @@ function allPositive(...values: number[]) {
   return values.every((value) => value > 0);
 }
 
+function useToolSubmission<T extends Record<string, unknown>>(draftValues: T) {
+  const [submittedValues, setSubmittedValues] = useState<T | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const processingRef = useRef(false);
+
+  function submit() {
+    if (processingRef.current) return;
+
+    processingRef.current = true;
+    setIsProcessing(true);
+    setSubmittedValues({ ...draftValues });
+
+    window.setTimeout(() => {
+      processingRef.current = false;
+      setIsProcessing(false);
+    }, 0);
+  }
+
+  function clear() {
+    processingRef.current = false;
+    setIsProcessing(false);
+    setSubmittedValues(null);
+  }
+
+  return {
+    clear,
+    hasResult: submittedValues !== null,
+    isProcessing,
+    submit,
+    values: submittedValues,
+  };
+}
+
+function StartButton({
+  isProcessing,
+  onClick,
+}: {
+  isProcessing: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-60"
+      disabled={isProcessing}
+      onClick={onClick}
+      type="button"
+    >
+      {isProcessing ? "Processing..." : "Start"}
+    </button>
+  );
+}
+
 function ResetButton({ onClick }: { onClick: () => void }) {
   return (
     <button
@@ -87,6 +139,17 @@ function FriendlyValidation() {
   );
 }
 
+function WaitingForStart() {
+  return (
+    <ResultBox title="Ready to calculate" tone="default">
+      <p>
+        Adjust the inputs, then click Start. Results stay unchanged until you
+        start again.
+      </p>
+    </ResultBox>
+  );
+}
+
 function paperOptions() {
   return paperSizes.map((paper) => ({
     label: `${paper.name}${paper.group ? ` (${paper.group})` : ""}`,
@@ -99,6 +162,15 @@ function selectedPaper(name: string) {
 }
 
 function DpiCalculator() {
+  const defaults = {
+    dpi: "300",
+    heightPx: "2400",
+    mode: "pixels-to-print",
+    printHeight: "8",
+    printWidth: "10",
+    unit: "in" as Unit,
+    widthPx: "3000",
+  };
   const [mode, setMode] = useState("pixels-to-print");
   const [widthPx, setWidthPx] = useState("3000");
   const [heightPx, setHeightPx] = useState("2400");
@@ -106,19 +178,34 @@ function DpiCalculator() {
   const [printHeight, setPrintHeight] = useState("8");
   const [unit, setUnit] = useState<Unit>("in");
   const [dpi, setDpi] = useState("300");
-  const dpiNumber = toNumber(dpi);
-  const isPixelsMode = mode === "pixels-to-print";
-  const printResult = pixelToPrintSize(toNumber(widthPx), toNumber(heightPx), dpiNumber);
-  const pixelResult = printSizeToPixels(
-    toNumber(printWidth),
-    toNumber(printHeight),
+  const submission = useToolSubmission({
+    dpi,
+    heightPx,
+    mode,
+    printHeight,
+    printWidth,
     unit,
+    widthPx,
+  });
+  const values = submission.values ?? defaults;
+  const dpiNumber = toNumber(values.dpi);
+  const isPixelsMode = mode === "pixels-to-print";
+  const submittedPixelsMode = values.mode === "pixels-to-print";
+  const printResult = pixelToPrintSize(
+    toNumber(values.widthPx),
+    toNumber(values.heightPx),
     dpiNumber,
   );
-  const valid = isPixelsMode
-    ? allPositive(toNumber(widthPx), toNumber(heightPx), dpiNumber)
-    : allPositive(toNumber(printWidth), toNumber(printHeight), dpiNumber);
-  const copyText = isPixelsMode
+  const pixelResult = printSizeToPixels(
+    toNumber(values.printWidth),
+    toNumber(values.printHeight),
+    values.unit,
+    dpiNumber,
+  );
+  const valid = submittedPixelsMode
+    ? allPositive(toNumber(values.widthPx), toNumber(values.heightPx), dpiNumber)
+    : allPositive(toNumber(values.printWidth), toNumber(values.printHeight), dpiNumber);
+  const copyText = submittedPixelsMode
     ? `Print size: ${round(printResult.widthIn, 2)} x ${round(printResult.heightIn, 2)} in at ${dpiNumber} DPI`
     : `Required pixels: ${pixelResult.widthPx} x ${pixelResult.heightPx} px at ${dpiNumber} DPI`;
 
@@ -171,48 +258,48 @@ function DpiCalculator() {
         </div>
       )}
 
-      <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto]">
-        {valid ? (
-          <ResultBox title={isPixelsMode ? "Print size" : "Required pixels"} tone="success">
-            {isPixelsMode ? (
-              <>
-                <ResultLine label="Inches" value={`${round(printResult.widthIn, 2)} x ${round(printResult.heightIn, 2)} in`} />
-                <ResultLine label="Centimeters" value={`${round(fromInches(printResult.widthIn, "cm"), 2)} x ${round(fromInches(printResult.heightIn, "cm"), 2)} cm`} />
-              </>
-            ) : (
-              <p className="text-3xl font-bold">
-                {pixelResult.widthPx} x {pixelResult.heightPx} px
-              </p>
-            )}
-            <CopyButton text={copyText} />
-          </ResultBox>
+      <CalculatorResult
+        copyText={copyText}
+        hasResult={submission.hasResult}
+        isProcessing={submission.isProcessing}
+        onReset={() => {
+          setMode(defaults.mode);
+          setWidthPx(defaults.widthPx);
+          setHeightPx(defaults.heightPx);
+          setPrintWidth(defaults.printWidth);
+          setPrintHeight(defaults.printHeight);
+          setUnit(defaults.unit);
+          setDpi(defaults.dpi);
+          submission.clear();
+        }}
+        onStart={submission.submit}
+        title={submittedPixelsMode ? "Print size" : "Required pixels"}
+        valid={valid}
+      >
+        {submittedPixelsMode ? (
+          <>
+            <ResultLine label="Inches" value={`${round(printResult.widthIn, 2)} x ${round(printResult.heightIn, 2)} in`} />
+            <ResultLine label="Centimeters" value={`${round(fromInches(printResult.widthIn, "cm"), 2)} x ${round(fromInches(printResult.heightIn, "cm"), 2)} cm`} />
+          </>
         ) : (
-          <FriendlyValidation />
+          <p className="text-3xl font-bold">
+            {pixelResult.widthPx} x {pixelResult.heightPx} px
+          </p>
         )}
-        <div className="md:self-start">
-          <ResetButton
-            onClick={() => {
-              setMode("pixels-to-print");
-              setWidthPx("3000");
-              setHeightPx("2400");
-              setPrintWidth("10");
-              setPrintHeight("8");
-              setUnit("in");
-              setDpi("300");
-            }}
-          />
-        </div>
-      </div>
+      </CalculatorResult>
     </CalculatorCard>
   );
 }
 
 function PixelsToInches() {
+  const defaults = { dpi: "300", heightPx: "2400", widthPx: "3000" };
   const [widthPx, setWidthPx] = useState("3000");
   const [heightPx, setHeightPx] = useState("2400");
   const [dpi, setDpi] = useState("300");
-  const result = pixelToPrintSize(toNumber(widthPx), toNumber(heightPx), toNumber(dpi));
-  const valid = allPositive(toNumber(widthPx), toNumber(heightPx), toNumber(dpi));
+  const submission = useToolSubmission({ dpi, heightPx, widthPx });
+  const values = submission.values ?? defaults;
+  const result = pixelToPrintSize(toNumber(values.widthPx), toNumber(values.heightPx), toNumber(values.dpi));
+  const valid = allPositive(toNumber(values.widthPx), toNumber(values.heightPx), toNumber(values.dpi));
   const copyText = `${round(result.widthIn, 2)} x ${round(result.heightIn, 2)} inches`;
 
   return (
@@ -222,7 +309,7 @@ function PixelsToInches() {
         <InputField helper="Image height in pixels." id="px-in-height" label="Pixel height" onChange={setHeightPx} placeholder="2400" value={heightPx} />
         <InputField helper="Print resolution." id="px-in-dpi" label="DPI" onChange={setDpi} placeholder="300" value={dpi} />
       </div>
-      <CalculatorResult valid={valid} title="Inches" copyText={copyText} onReset={() => { setWidthPx("3000"); setHeightPx("2400"); setDpi("300"); }}>
+      <CalculatorResult valid={valid} title="Inches" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidthPx(defaults.widthPx); setHeightPx(defaults.heightPx); setDpi(defaults.dpi); submission.clear(); }}>
         <p className="text-3xl font-bold">{copyText}</p>
       </CalculatorResult>
     </CalculatorCard>
@@ -230,11 +317,14 @@ function PixelsToInches() {
 }
 
 function InchesToPixels() {
+  const defaults = { dpi: "300", height: "8", width: "10" };
   const [width, setWidth] = useState("10");
   const [height, setHeight] = useState("8");
   const [dpi, setDpi] = useState("300");
-  const result = printSizeToPixels(toNumber(width), toNumber(height), "in", toNumber(dpi));
-  const valid = allPositive(toNumber(width), toNumber(height), toNumber(dpi));
+  const submission = useToolSubmission({ dpi, height, width });
+  const values = submission.values ?? defaults;
+  const result = printSizeToPixels(toNumber(values.width), toNumber(values.height), "in", toNumber(values.dpi));
+  const valid = allPositive(toNumber(values.width), toNumber(values.height), toNumber(values.dpi));
   const copyText = `${result.widthPx} x ${result.heightPx} px`;
 
   return (
@@ -244,7 +334,7 @@ function InchesToPixels() {
         <InputField helper="Print height in inches." id="in-px-height" label="Height" onChange={setHeight} placeholder="8" value={height} />
         <InputField helper="Target print resolution." id="in-px-dpi" label="DPI" onChange={setDpi} placeholder="300" value={dpi} />
       </div>
-      <CalculatorResult valid={valid} title="Required pixels" copyText={copyText} onReset={() => { setWidth("10"); setHeight("8"); setDpi("300"); }}>
+      <CalculatorResult valid={valid} title="Required pixels" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidth(defaults.width); setHeight(defaults.height); setDpi(defaults.dpi); submission.clear(); }}>
         <p className="text-3xl font-bold">{copyText}</p>
       </CalculatorResult>
     </CalculatorCard>
@@ -252,13 +342,16 @@ function InchesToPixels() {
 }
 
 function PixelsToCentimeters() {
+  const defaults = { dpi: "300", heightPx: "2400", widthPx: "3000" };
   const [widthPx, setWidthPx] = useState("3000");
   const [heightPx, setHeightPx] = useState("2400");
   const [dpi, setDpi] = useState("300");
-  const result = pixelToPrintSize(toNumber(widthPx), toNumber(heightPx), toNumber(dpi));
+  const submission = useToolSubmission({ dpi, heightPx, widthPx });
+  const values = submission.values ?? defaults;
+  const result = pixelToPrintSize(toNumber(values.widthPx), toNumber(values.heightPx), toNumber(values.dpi));
   const widthCm = fromInches(result.widthIn, "cm");
   const heightCm = fromInches(result.heightIn, "cm");
-  const valid = allPositive(toNumber(widthPx), toNumber(heightPx), toNumber(dpi));
+  const valid = allPositive(toNumber(values.widthPx), toNumber(values.heightPx), toNumber(values.dpi));
   const copyText = `${round(widthCm, 2)} x ${round(heightCm, 2)} cm`;
 
   return (
@@ -268,7 +361,7 @@ function PixelsToCentimeters() {
         <InputField helper="Image height in pixels." id="px-cm-height" label="Pixel height" onChange={setHeightPx} placeholder="2400" value={heightPx} />
         <InputField helper="Print resolution." id="px-cm-dpi" label="DPI" onChange={setDpi} placeholder="300" value={dpi} />
       </div>
-      <CalculatorResult valid={valid} title="Centimeters" copyText={copyText} onReset={() => { setWidthPx("3000"); setHeightPx("2400"); setDpi("300"); }}>
+      <CalculatorResult valid={valid} title="Centimeters" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidthPx(defaults.widthPx); setHeightPx(defaults.heightPx); setDpi(defaults.dpi); submission.clear(); }}>
         <p className="text-3xl font-bold">{copyText}</p>
       </CalculatorResult>
     </CalculatorCard>
@@ -276,12 +369,15 @@ function PixelsToCentimeters() {
 }
 
 function ImagePrintSize() {
+  const defaults = { dpi: "300", heightPx: "2400", widthPx: "3000" };
   const [widthPx, setWidthPx] = useState("3000");
   const [heightPx, setHeightPx] = useState("2400");
   const [dpi, setDpi] = useState("300");
-  const result = pixelToPrintSize(toNumber(widthPx), toNumber(heightPx), toNumber(dpi));
-  const valid = allPositive(toNumber(widthPx), toNumber(heightPx), toNumber(dpi));
-  const copyText = `${round(result.widthIn, 2)} x ${round(result.heightIn, 2)} in at ${dpi} DPI`;
+  const submission = useToolSubmission({ dpi, heightPx, widthPx });
+  const values = submission.values ?? defaults;
+  const result = pixelToPrintSize(toNumber(values.widthPx), toNumber(values.heightPx), toNumber(values.dpi));
+  const valid = allPositive(toNumber(values.widthPx), toNumber(values.heightPx), toNumber(values.dpi));
+  const copyText = `${round(result.widthIn, 2)} x ${round(result.heightIn, 2)} in at ${values.dpi} DPI`;
 
   return (
     <CalculatorCard title="Image Print Size Calculator" description="Find the physical print size for image pixels and DPI.">
@@ -290,7 +386,7 @@ function ImagePrintSize() {
         <InputField helper="Image height in pixels." id="image-print-height" label="Pixel height" onChange={setHeightPx} placeholder="2400" value={heightPx} />
         <InputField helper="Try 300, 200, or 150." id="image-print-dpi" label="DPI" onChange={setDpi} placeholder="300" value={dpi} />
       </div>
-      <CalculatorResult valid={valid} title="Print size" copyText={copyText} onReset={() => { setWidthPx("3000"); setHeightPx("2400"); setDpi("300"); }}>
+      <CalculatorResult valid={valid} title="Print size" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidthPx(defaults.widthPx); setHeightPx(defaults.heightPx); setDpi(defaults.dpi); submission.clear(); }}>
         <ResultLine label="Inches" value={`${round(result.widthIn, 2)} x ${round(result.heightIn, 2)} in`} />
         <ResultLine label="Centimeters" value={`${round(fromInches(result.widthIn, "cm"), 2)} x ${round(fromInches(result.heightIn, "cm"), 2)} cm`} />
         <ResultLine label="Millimeters" value={`${round(fromInches(result.widthIn, "mm"), 1)} x ${round(fromInches(result.heightIn, "mm"), 1)} mm`} />
@@ -300,16 +396,25 @@ function ImagePrintSize() {
 }
 
 function PrintResolutionChecker() {
+  const defaults = {
+    heightPx: "2400",
+    printHeight: "8",
+    printWidth: "10",
+    unit: "in" as Unit,
+    widthPx: "3000",
+  };
   const [widthPx, setWidthPx] = useState("3000");
   const [heightPx, setHeightPx] = useState("2400");
   const [printWidth, setPrintWidth] = useState("10");
   const [printHeight, setPrintHeight] = useState("8");
   const [unit, setUnit] = useState<Unit>("in");
-  const widthPpi = toNumber(widthPx) / toInches(toNumber(printWidth), unit);
-  const heightPpi = toNumber(heightPx) / toInches(toNumber(printHeight), unit);
+  const submission = useToolSubmission({ heightPx, printHeight, printWidth, unit, widthPx });
+  const values = submission.values ?? defaults;
+  const widthPpi = toNumber(values.widthPx) / toInches(toNumber(values.printWidth), values.unit);
+  const heightPpi = toNumber(values.heightPx) / toInches(toNumber(values.printHeight), values.unit);
   const effectivePpi = Math.min(widthPpi || 0, heightPpi || 0);
   const verdict = qualityVerdict(effectivePpi);
-  const valid = allPositive(toNumber(widthPx), toNumber(heightPx), toNumber(printWidth), toNumber(printHeight));
+  const valid = allPositive(toNumber(values.widthPx), toNumber(values.heightPx), toNumber(values.printWidth), toNumber(values.printHeight));
   const copyText = `Effective resolution: ${round(effectivePpi, 1)} PPI - ${verdict.label}`;
 
   return (
@@ -321,7 +426,7 @@ function PrintResolutionChecker() {
         <InputField helper="Target print width." id="checker-print-width" label="Print width" onChange={setPrintWidth} placeholder="10" value={printWidth} />
         <InputField helper="Target print height." id="checker-print-height" label="Print height" onChange={setPrintHeight} placeholder="8" value={printHeight} />
       </div>
-      <CalculatorResult valid={valid} title="Quality verdict" copyText={copyText} tone={verdict.tone} onReset={() => { setWidthPx("3000"); setHeightPx("2400"); setPrintWidth("10"); setPrintHeight("8"); setUnit("in"); }}>
+      <CalculatorResult valid={valid} title="Quality verdict" copyText={copyText} tone={verdict.tone} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidthPx(defaults.widthPx); setHeightPx(defaults.heightPx); setPrintWidth(defaults.printWidth); setPrintHeight(defaults.printHeight); setUnit(defaults.unit); submission.clear(); }}>
         <p className="text-3xl font-bold">{round(effectivePpi, 1)} PPI</p>
         <p className="mt-2 font-semibold">{verdict.label}</p>
         <p className="mt-1">{verdict.description}</p>
@@ -333,13 +438,21 @@ function PrintResolutionChecker() {
 }
 
 function AspectRatioCalculator() {
+  const defaults = {
+    height: "1080",
+    newHeight: "",
+    newWidth: "1200",
+    width: "1920",
+  };
   const [width, setWidth] = useState("1920");
   const [height, setHeight] = useState("1080");
   const [newWidth, setNewWidth] = useState("1200");
   const [newHeight, setNewHeight] = useState("");
-  const ratio = useMemo(() => calculateAspectRatio(toNumber(width), toNumber(height)), [width, height]);
-  const scaledHeight = newWidth ? scaleFromWidth(toNumber(newWidth), ratio.ratioWidth, ratio.ratioHeight) : 0;
-  const scaledWidth = newHeight ? scaleFromHeight(toNumber(newHeight), ratio.ratioWidth, ratio.ratioHeight) : 0;
+  const submission = useToolSubmission({ height, newHeight, newWidth, width });
+  const values = submission.values ?? defaults;
+  const ratio = calculateAspectRatio(toNumber(values.width), toNumber(values.height));
+  const scaledHeight = values.newWidth ? scaleFromWidth(toNumber(values.newWidth), ratio.ratioWidth, ratio.ratioHeight) : 0;
+  const scaledWidth = values.newHeight ? scaleFromHeight(toNumber(values.newHeight), ratio.ratioWidth, ratio.ratioHeight) : 0;
   const valid = Boolean(ratio.label);
   const copyText = `Aspect ratio: ${ratio.label}`;
 
@@ -351,25 +464,33 @@ function AspectRatioCalculator() {
         <InputField helper="Optional new width." id="ratio-new-width" label="New width" onChange={setNewWidth} placeholder="1200" value={newWidth} />
         <InputField helper="Optional new height." id="ratio-new-height" label="New height" onChange={setNewHeight} placeholder="675" value={newHeight} />
       </div>
-      <CalculatorResult valid={valid} title="Aspect ratio" copyText={copyText} onReset={() => { setWidth("1920"); setHeight("1080"); setNewWidth("1200"); setNewHeight(""); }}>
+      <CalculatorResult valid={valid} title="Aspect ratio" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidth(defaults.width); setHeight(defaults.height); setNewWidth(defaults.newWidth); setNewHeight(defaults.newHeight); submission.clear(); }}>
         <p className="text-3xl font-bold">{ratio.label}</p>
-        {newWidth ? <ResultLine label="Height for new width" value={`${round(scaledHeight, 2)}`} /> : null}
-        {newHeight ? <ResultLine label="Width for new height" value={`${round(scaledWidth, 2)}`} /> : null}
+        {values.newWidth ? <ResultLine label="Height for new width" value={`${round(scaledHeight, 2)}`} /> : null}
+        {values.newHeight ? <ResultLine label="Width for new height" value={`${round(scaledWidth, 2)}`} /> : null}
       </CalculatorResult>
     </CalculatorCard>
   );
 }
 
 function ImageCropCalculator() {
+  const defaults = {
+    imageHeight: "3000",
+    imageWidth: "4000",
+    targetHeight: "10",
+    targetWidth: "8",
+  };
   const [imageWidth, setImageWidth] = useState("4000");
   const [imageHeight, setImageHeight] = useState("3000");
   const [targetWidth, setTargetWidth] = useState("8");
   const [targetHeight, setTargetHeight] = useState("10");
+  const submission = useToolSubmission({ imageHeight, imageWidth, targetHeight, targetWidth });
+  const values = submission.values ?? defaults;
   const result = calculateCropToAspect(
-    toNumber(imageWidth),
-    toNumber(imageHeight),
-    toNumber(targetWidth),
-    toNumber(targetHeight),
+    toNumber(values.imageWidth),
+    toNumber(values.imageHeight),
+    toNumber(values.targetWidth),
+    toNumber(values.targetHeight),
   );
   const copyText = `Crop to ${round(result.cropWidth, 0)} x ${round(result.cropHeight, 0)}; crop ${round(result.cropPercent, 1)}%`;
 
@@ -381,7 +502,7 @@ function ImageCropCalculator() {
         <InputField helper="Target print width." id="crop-target-width" label="Target width" onChange={setTargetWidth} placeholder="8" value={targetWidth} />
         <InputField helper="Target print height." id="crop-target-height" label="Target height" onChange={setTargetHeight} placeholder="10" value={targetHeight} />
       </div>
-      <CalculatorResult valid={result.isValid} title="Crop estimate" copyText={copyText} tone={result.cropPercent > 0 ? "default" : "success"} onReset={() => { setImageWidth("4000"); setImageHeight("3000"); setTargetWidth("8"); setTargetHeight("10"); }}>
+      <CalculatorResult valid={result.isValid} title="Crop estimate" copyText={copyText} tone={result.cropPercent > 0 ? "default" : "success"} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setImageWidth(defaults.imageWidth); setImageHeight(defaults.imageHeight); setTargetWidth(defaults.targetWidth); setTargetHeight(defaults.targetHeight); submission.clear(); }}>
         <ResultLine label="Cropped image area" value={`${round(result.cropWidth, 0)} x ${round(result.cropHeight, 0)}`} />
         <ResultLine label="Crop direction" value={result.orientation === "sides" ? "Left and right sides" : "Top and bottom"} />
         <ResultLine label="Estimated loss" value={`${round(result.cropPercent, 1)}%`} />
@@ -391,15 +512,23 @@ function ImageCropCalculator() {
 }
 
 function PaperSizeDimensions() {
+  const defaults = {
+    dpi: "300",
+    orientation: "portrait",
+    paperName: "A4",
+    unit: "mm" as Unit,
+  };
   const [paperName, setPaperName] = useState("A4");
   const [orientation, setOrientation] = useState("portrait");
   const [unit, setUnit] = useState<Unit>("mm");
   const [dpi, setDpi] = useState("300");
-  const paper = selectedPaper(paperName);
-  const details = paperSizeDetails(paper, orientation === "landscape" ? "landscape" : "portrait", toNumber(dpi));
-  const width = fromInches(details.widthIn, unit);
-  const height = fromInches(details.heightIn, unit);
-  const copyText = `${paper.name}: ${round(width, 2)} x ${round(height, 2)} ${unitLabels[unit]}`;
+  const submission = useToolSubmission({ dpi, orientation, paperName, unit });
+  const values = submission.values ?? defaults;
+  const paper = selectedPaper(values.paperName);
+  const details = paperSizeDetails(paper, values.orientation === "landscape" ? "landscape" : "portrait", toNumber(values.dpi));
+  const width = fromInches(details.widthIn, values.unit);
+  const height = fromInches(details.heightIn, values.unit);
+  const copyText = `${paper.name}: ${round(width, 2)} x ${round(height, 2)} ${unitLabels[values.unit]}`;
 
   return (
     <CalculatorCard title="Paper Size Dimensions" description="Look up common paper sizes in print units and pixels.">
@@ -409,8 +538,8 @@ function PaperSizeDimensions() {
         <SelectField helper="Display unit." id="paper-dim-unit" label="Unit" onChange={(value) => setUnit(value as Unit)} options={unitOptions} value={unit} />
         <InputField helper="Used for pixel dimensions." id="paper-dim-dpi" label="DPI" onChange={setDpi} placeholder="300" value={dpi} />
       </div>
-      <CalculatorResult valid={toNumber(dpi) > 0} title="Paper dimensions" copyText={copyText} onReset={() => { setPaperName("A4"); setOrientation("portrait"); setUnit("mm"); setDpi("300"); }}>
-        <ResultLine label="Physical size" value={`${round(width, 2)} x ${round(height, 2)} ${unitLabels[unit]}`} />
+      <CalculatorResult valid={toNumber(values.dpi) > 0} title="Paper dimensions" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPaperName(defaults.paperName); setOrientation(defaults.orientation); setUnit(defaults.unit); setDpi(defaults.dpi); submission.clear(); }}>
+        <ResultLine label="Physical size" value={`${round(width, 2)} x ${round(height, 2)} ${unitLabels[values.unit]}`} />
         <ResultLine label="Pixels" value={`${details.widthPx} x ${details.heightPx} px`} />
         <ResultLine label="Group" value={paper.group ?? "Custom"} />
       </CalculatorResult>
@@ -419,17 +548,25 @@ function PaperSizeDimensions() {
 }
 
 function PaperSizeConverter() {
+  const defaults = {
+    dpi: "300",
+    fromUnit: "mm" as Unit,
+    paperName: "A4",
+    toUnit: "in" as Unit,
+  };
   const [paperName, setPaperName] = useState("A4");
   const [fromUnit, setFromUnit] = useState<Unit>("mm");
   const [toUnit, setToUnit] = useState<Unit>("in");
   const [dpi, setDpi] = useState("300");
-  const paper = selectedPaper(paperName);
-  const widthFrom = convertUnit(paper.widthMm, "mm", fromUnit);
-  const heightFrom = convertUnit(paper.heightMm, "mm", fromUnit);
-  const widthTo = convertUnit(widthFrom, fromUnit, toUnit);
-  const heightTo = convertUnit(heightFrom, fromUnit, toUnit);
-  const pixels = printSizeToPixels(widthTo, heightTo, toUnit, toNumber(dpi));
-  const copyText = `${round(widthTo, 3)} x ${round(heightTo, 3)} ${unitLabels[toUnit]}`;
+  const submission = useToolSubmission({ dpi, fromUnit, paperName, toUnit });
+  const values = submission.values ?? defaults;
+  const paper = selectedPaper(values.paperName);
+  const widthFrom = convertUnit(paper.widthMm, "mm", values.fromUnit);
+  const heightFrom = convertUnit(paper.heightMm, "mm", values.fromUnit);
+  const widthTo = convertUnit(widthFrom, values.fromUnit, values.toUnit);
+  const heightTo = convertUnit(heightFrom, values.fromUnit, values.toUnit);
+  const pixels = printSizeToPixels(widthTo, heightTo, values.toUnit, toNumber(values.dpi));
+  const copyText = `${round(widthTo, 3)} x ${round(heightTo, 3)} ${unitLabels[values.toUnit]}`;
 
   return (
     <CalculatorCard title="Paper Size Converter" description="Convert common paper sizes between units and pixels.">
@@ -439,9 +576,9 @@ function PaperSizeConverter() {
         <SelectField helper="Converted display unit." id="paper-convert-to" label="To unit" onChange={(value) => setToUnit(value as Unit)} options={unitOptions} value={toUnit} />
         <InputField helper="Needed for pixels." id="paper-convert-dpi" label="DPI" onChange={setDpi} placeholder="300" value={dpi} />
       </div>
-      <CalculatorResult valid={toNumber(dpi) > 0} title="Converted paper size" copyText={copyText} onReset={() => { setPaperName("A4"); setFromUnit("mm"); setToUnit("in"); setDpi("300"); }}>
-        <ResultLine label={`Original ${unitLabels[fromUnit]}`} value={`${round(widthFrom, 2)} x ${round(heightFrom, 2)} ${unitLabels[fromUnit]}`} />
-        <ResultLine label={`Converted ${unitLabels[toUnit]}`} value={copyText} />
+      <CalculatorResult valid={toNumber(values.dpi) > 0} title="Converted paper size" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPaperName(defaults.paperName); setFromUnit(defaults.fromUnit); setToUnit(defaults.toUnit); setDpi(defaults.dpi); submission.clear(); }}>
+        <ResultLine label={`Original ${unitLabels[values.fromUnit]}`} value={`${round(widthFrom, 2)} x ${round(heightFrom, 2)} ${unitLabels[values.fromUnit]}`} />
+        <ResultLine label={`Converted ${unitLabels[values.toUnit]}`} value={copyText} />
         <ResultLine label="Pixels" value={`${pixels.widthPx} x ${pixels.heightPx} px`} />
       </CalculatorResult>
     </CalculatorCard>
@@ -449,16 +586,24 @@ function PaperSizeConverter() {
 }
 
 function CustomPaperSize() {
+  const defaults = {
+    dpi: "300",
+    height: "297",
+    unit: "mm" as Unit,
+    width: "210",
+  };
   const [width, setWidth] = useState("210");
   const [height, setHeight] = useState("297");
   const [unit, setUnit] = useState<Unit>("mm");
   const [dpi, setDpi] = useState("300");
-  const widthIn = toInches(toNumber(width), unit);
-  const heightIn = toInches(toNumber(height), unit);
-  const pixels = printSizeToPixels(toNumber(width), toNumber(height), unit, toNumber(dpi));
+  const submission = useToolSubmission({ dpi, height, unit, width });
+  const values = submission.values ?? defaults;
+  const widthIn = toInches(toNumber(values.width), values.unit);
+  const heightIn = toInches(toNumber(values.height), values.unit);
+  const pixels = printSizeToPixels(toNumber(values.width), toNumber(values.height), values.unit, toNumber(values.dpi));
   const ratio = calculateAspectRatio(Math.round(widthIn * 1000), Math.round(heightIn * 1000));
-  const valid = allPositive(toNumber(width), toNumber(height), toNumber(dpi));
-  const copyText = `${width} x ${height} ${unitLabels[unit]}, ${pixels.widthPx} x ${pixels.heightPx} px`;
+  const valid = allPositive(toNumber(values.width), toNumber(values.height), toNumber(values.dpi));
+  const copyText = `${values.width} x ${values.height} ${unitLabels[values.unit]}, ${pixels.widthPx} x ${pixels.heightPx} px`;
 
   return (
     <CalculatorCard title="Custom Paper Size Calculator" description="Calculate custom size, aspect ratio, and pixels.">
@@ -468,7 +613,7 @@ function CustomPaperSize() {
         <SelectField helper="Measurement unit." id="custom-unit" label="Unit" onChange={(value) => setUnit(value as Unit)} options={unitOptions} value={unit} />
         <InputField helper="For pixel dimensions." id="custom-dpi" label="DPI" onChange={setDpi} placeholder="300" value={dpi} />
       </div>
-      <CalculatorResult valid={valid} title="Custom size result" copyText={copyText} onReset={() => { setWidth("210"); setHeight("297"); setUnit("mm"); setDpi("300"); }}>
+      <CalculatorResult valid={valid} title="Custom size result" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidth(defaults.width); setHeight(defaults.height); setUnit(defaults.unit); setDpi(defaults.dpi); submission.clear(); }}>
         <ResultLine label="Pixels" value={`${pixels.widthPx} x ${pixels.heightPx} px`} />
         <ResultLine label="Aspect ratio" value={ratio.label} />
         <ResultLine label="Inches" value={`${round(widthIn, 3)} x ${round(heightIn, 3)} in`} />
@@ -478,6 +623,15 @@ function CustomPaperSize() {
 }
 
 function MarginCalculator({ safe = false }: { safe?: boolean }) {
+  const defaults = {
+    bottom: "0.5",
+    height: "11",
+    left: "0.5",
+    right: "0.5",
+    top: "0.5",
+    unit: "in" as Unit,
+    width: "8.5",
+  };
   const [width, setWidth] = useState("8.5");
   const [height, setHeight] = useState("11");
   const [unit, setUnit] = useState<Unit>("in");
@@ -485,13 +639,15 @@ function MarginCalculator({ safe = false }: { safe?: boolean }) {
   const [right, setRight] = useState("0.5");
   const [bottom, setBottom] = useState("0.5");
   const [left, setLeft] = useState("0.5");
-  const result = calculateContentArea(toNumber(width), toNumber(height), {
-    top: toNumber(top),
-    right: toNumber(right),
-    bottom: toNumber(bottom),
-    left: toNumber(left),
+  const submission = useToolSubmission({ bottom, height, left, right, top, unit, width });
+  const values = submission.values ?? defaults;
+  const result = calculateContentArea(toNumber(values.width), toNumber(values.height), {
+    top: toNumber(values.top),
+    right: toNumber(values.right),
+    bottom: toNumber(values.bottom),
+    left: toNumber(values.left),
   });
-  const copyText = `${round(result.contentWidth, 2)} x ${round(result.contentHeight, 2)} ${unitLabels[unit]}`;
+  const copyText = `${round(result.contentWidth, 2)} x ${round(result.contentHeight, 2)} ${unitLabels[values.unit]}`;
 
   return (
     <CalculatorCard title={safe ? "Safe Area Calculator" : "Margin Calculator"} description={safe ? "Calculate where important content should stay." : "See how much content area remains after margins are applied."}>
@@ -506,7 +662,7 @@ function MarginCalculator({ safe = false }: { safe?: boolean }) {
         <InputField helper="Space at the bottom." id="margin-bottom" label="Bottom margin" onChange={setBottom} placeholder="0.5" value={bottom} />
         <InputField helper="Space at the left." id="margin-left" label="Left margin" onChange={setLeft} placeholder="0.5" value={left} />
       </div>
-      <CalculatorResult valid={result.isValid} title={safe ? "Safe content area" : "Content area"} copyText={copyText} onReset={() => { setWidth("8.5"); setHeight("11"); setUnit("in"); setTop("0.5"); setRight("0.5"); setBottom("0.5"); setLeft("0.5"); }}>
+      <CalculatorResult valid={result.isValid} title={safe ? "Safe content area" : "Content area"} copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidth(defaults.width); setHeight(defaults.height); setUnit(defaults.unit); setTop(defaults.top); setRight(defaults.right); setBottom(defaults.bottom); setLeft(defaults.left); submission.clear(); }}>
         <p className="text-3xl font-bold">{copyText}</p>
       </CalculatorResult>
     </CalculatorCard>
@@ -514,13 +670,21 @@ function MarginCalculator({ safe = false }: { safe?: boolean }) {
 }
 
 function BleedCalculator() {
+  const defaults = {
+    bleed: "3",
+    height: "297",
+    unit: "mm" as Unit,
+    width: "210",
+  };
   const [width, setWidth] = useState("210");
   const [height, setHeight] = useState("297");
   const [bleed, setBleed] = useState("3");
   const [unit, setUnit] = useState<Unit>("mm");
-  const result = calculateBleed(toNumber(width), toNumber(height), toNumber(bleed), unit);
-  const valid = allPositive(toNumber(width), toNumber(height));
-  const copyText = `${round(result.totalWidth, 2)} x ${round(result.totalHeight, 2)} ${unitLabels[unit]} with bleed`;
+  const submission = useToolSubmission({ bleed, height, unit, width });
+  const values = submission.values ?? defaults;
+  const result = calculateBleed(toNumber(values.width), toNumber(values.height), toNumber(values.bleed), values.unit);
+  const valid = allPositive(toNumber(values.width), toNumber(values.height));
+  const copyText = `${round(result.totalWidth, 2)} x ${round(result.totalHeight, 2)} ${unitLabels[values.unit]} with bleed`;
 
   return (
     <CalculatorCard title="Bleed Calculator" description="Add bleed to each edge and calculate the full document size.">
@@ -530,29 +694,38 @@ function BleedCalculator() {
         <InputField helper="Bleed added to every edge." id="bleed-amount" label="Bleed" onChange={setBleed} placeholder="3" value={bleed} />
         <SelectField helper="Use your printer's unit." id="bleed-unit" label="Unit" onChange={(value) => setUnit(value as Unit)} options={unitOptions} value={unit} />
       </div>
-      <CalculatorResult valid={valid} title="Document size with bleed" copyText={copyText} onReset={() => { setWidth("210"); setHeight("297"); setBleed("3"); setUnit("mm"); }}>
-        <ResultLine label="Total size" value={`${round(result.totalWidth, 2)} x ${round(result.totalHeight, 2)} ${unitLabels[unit]}`} />
-        <ResultLine label="Added width" value={`${round(result.addedWidth, 2)} ${unitLabels[unit]}`} />
-        <ResultLine label="Added height" value={`${round(result.addedHeight, 2)} ${unitLabels[unit]}`} />
+      <CalculatorResult valid={valid} title="Document size with bleed" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidth(defaults.width); setHeight(defaults.height); setBleed(defaults.bleed); setUnit(defaults.unit); submission.clear(); }}>
+        <ResultLine label="Total size" value={`${round(result.totalWidth, 2)} x ${round(result.totalHeight, 2)} ${unitLabels[values.unit]}`} />
+        <ResultLine label="Added width" value={`${round(result.addedWidth, 2)} ${unitLabels[values.unit]}`} />
+        <ResultLine label="Added height" value={`${round(result.addedHeight, 2)} ${unitLabels[values.unit]}`} />
       </CalculatorResult>
     </CalculatorCard>
   );
 }
 
 function PrintableAreaCalculator() {
+  const defaults = {
+    edge: "0.125",
+    height: "11",
+    margin: "0.5",
+    unit: "in" as Unit,
+    width: "8.5",
+  };
   const [width, setWidth] = useState("8.5");
   const [height, setHeight] = useState("11");
   const [unit, setUnit] = useState<Unit>("in");
   const [margin, setMargin] = useState("0.5");
   const [edge, setEdge] = useState("0.125");
-  const totalInset = toNumber(margin) + toNumber(edge);
-  const result = calculateContentArea(toNumber(width), toNumber(height), {
+  const submission = useToolSubmission({ edge, height, margin, unit, width });
+  const values = submission.values ?? defaults;
+  const totalInset = toNumber(values.margin) + toNumber(values.edge);
+  const result = calculateContentArea(toNumber(values.width), toNumber(values.height), {
     top: totalInset,
     right: totalInset,
     bottom: totalInset,
     left: totalInset,
   });
-  const copyText = `${round(result.contentWidth, 2)} x ${round(result.contentHeight, 2)} ${unitLabels[unit]}`;
+  const copyText = `${round(result.contentWidth, 2)} x ${round(result.contentHeight, 2)} ${unitLabels[values.unit]}`;
 
   return (
     <CalculatorCard title="Printable Area Calculator" description="Calculate usable print area after margins and printer non-printable edges.">
@@ -563,15 +736,25 @@ function PrintableAreaCalculator() {
         <InputField helper="Your layout margin." id="printable-margin" label="Margin" onChange={setMargin} placeholder="0.5" value={margin} />
         <InputField helper="Printer edge limit." id="printable-edge" label="Non-printable edge" onChange={setEdge} placeholder="0.125" value={edge} />
       </div>
-      <CalculatorResult valid={result.isValid} title="Printable area" copyText={copyText} onReset={() => { setWidth("8.5"); setHeight("11"); setUnit("in"); setMargin("0.5"); setEdge("0.125"); }}>
+      <CalculatorResult valid={result.isValid} title="Printable area" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidth(defaults.width); setHeight(defaults.height); setUnit(defaults.unit); setMargin(defaults.margin); setEdge(defaults.edge); submission.clear(); }}>
         <p className="text-3xl font-bold">{copyText}</p>
-        <ResultLine label="Total inset on each side" value={`${round(totalInset, 3)} ${unitLabels[unit]}`} />
+        <ResultLine label="Total inset on each side" value={`${round(totalInset, 3)} ${unitLabels[values.unit]}`} />
       </CalculatorResult>
     </CalculatorCard>
   );
 }
 
 function YieldCalculator({ labelMode = "items" }: { labelMode?: "items" | "labels" | "photos" }) {
+  const defaults = {
+    bleed: "0",
+    gap: "0.125",
+    itemHeight: labelMode === "photos" ? "6" : "2",
+    itemWidth: labelMode === "photos" ? "4" : "3.5",
+    margin: "0.25",
+    sheetHeight: "11",
+    sheetWidth: "8.5",
+    unit: "in" as Unit,
+  };
   const [itemWidth, setItemWidth] = useState(labelMode === "photos" ? "4" : "3.5");
   const [itemHeight, setItemHeight] = useState(labelMode === "photos" ? "6" : "2");
   const [sheetWidth, setSheetWidth] = useState("8.5");
@@ -580,17 +763,19 @@ function YieldCalculator({ labelMode = "items" }: { labelMode?: "items" | "label
   const [margin, setMargin] = useState("0.25");
   const [bleed, setBleed] = useState("0");
   const [unit, setUnit] = useState<Unit>("in");
-  const effectiveItemWidth = toNumber(itemWidth) + toNumber(bleed) * 2;
-  const effectiveItemHeight = toNumber(itemHeight) + toNumber(bleed) * 2;
+  const submission = useToolSubmission({ bleed, gap, itemHeight, itemWidth, margin, sheetHeight, sheetWidth, unit });
+  const values = submission.values ?? defaults;
+  const effectiveItemWidth = toNumber(values.itemWidth) + toNumber(values.bleed) * 2;
+  const effectiveItemHeight = toNumber(values.itemHeight) + toNumber(values.bleed) * 2;
   const result = calculateNUp({
     itemWidth: effectiveItemWidth,
     itemHeight: effectiveItemHeight,
-    sheetWidth: toNumber(sheetWidth),
-    sheetHeight: toNumber(sheetHeight),
-    gap: toNumber(gap),
-    margin: toNumber(margin),
+    sheetWidth: toNumber(values.sheetWidth),
+    sheetHeight: toNumber(values.sheetHeight),
+    gap: toNumber(values.gap),
+    margin: toNumber(values.margin),
   });
-  const valid = allPositive(toNumber(itemWidth), toNumber(itemHeight), toNumber(sheetWidth), toNumber(sheetHeight));
+  const valid = allPositive(toNumber(values.itemWidth), toNumber(values.itemHeight), toNumber(values.sheetWidth), toNumber(values.sheetHeight));
   const noun = labelMode === "labels" ? "labels" : labelMode === "photos" ? "photos" : "items";
   const copyText = `${result.perSheet} ${noun} per sheet (${result.columns} x ${result.rows})`;
 
@@ -606,10 +791,10 @@ function YieldCalculator({ labelMode = "items" }: { labelMode?: "items" | "label
         <InputField helper="Outer sheet margin." id="yield-margin" label="Sheet margin" onChange={setMargin} placeholder="0.25" value={margin} />
         <InputField helper="Optional bleed around each item." id="yield-bleed" label="Item bleed" onChange={setBleed} placeholder="0" value={bleed} />
       </div>
-      <CalculatorResult valid={valid && result.perSheet > 0} title="Sheet yield" copyText={copyText} onReset={() => { setItemWidth(labelMode === "photos" ? "4" : "3.5"); setItemHeight(labelMode === "photos" ? "6" : "2"); setSheetWidth("8.5"); setSheetHeight("11"); setGap("0.125"); setMargin("0.25"); setBleed("0"); setUnit("in"); }}>
+      <CalculatorResult valid={valid && result.perSheet > 0} title="Sheet yield" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setItemWidth(defaults.itemWidth); setItemHeight(defaults.itemHeight); setSheetWidth(defaults.sheetWidth); setSheetHeight(defaults.sheetHeight); setGap(defaults.gap); setMargin(defaults.margin); setBleed(defaults.bleed); setUnit(defaults.unit); submission.clear(); }}>
         <p className="text-3xl font-bold">{result.perSheet} {noun} per sheet</p>
         <ResultLine label="Columns x rows" value={`${result.columns} x ${result.rows}`} />
-        <ResultLine label="Effective item size" value={`${round(effectiveItemWidth, 3)} x ${round(effectiveItemHeight, 3)} ${unitLabels[unit]}`} />
+        <ResultLine label="Effective item size" value={`${round(effectiveItemWidth, 3)} x ${round(effectiveItemHeight, 3)} ${unitLabels[values.unit]}`} />
         <ResultLine label="Estimated area use" value={`${round(result.areaUsePercent, 1)}%`} />
       </CalculatorResult>
     </CalculatorCard>
@@ -617,19 +802,27 @@ function YieldCalculator({ labelMode = "items" }: { labelMode?: "items" | "label
 }
 
 function PhotoPrintLayoutCalculator() {
+  const defaults = {
+    gap: "0.125",
+    margin: "0.25",
+    paperName: "Letter",
+    photoName: "4 x 6 Photo",
+  };
   const [photoName, setPhotoName] = useState("4 x 6 Photo");
   const [paperName, setPaperName] = useState("Letter");
   const [gap, setGap] = useState("0.125");
   const [margin, setMargin] = useState("0.25");
-  const photo = photoSizes.find((item) => item.name === photoName) ?? photoSizes[0];
-  const paper = selectedPaper(paperName);
+  const submission = useToolSubmission({ gap, margin, paperName, photoName });
+  const values = submission.values ?? defaults;
+  const photo = photoSizes.find((item) => item.name === values.photoName) ?? photoSizes[0];
+  const paper = selectedPaper(values.paperName);
   const result = calculateNUp({
     itemWidth: mmToInches(photo.widthMm),
     itemHeight: mmToInches(photo.heightMm),
     sheetWidth: mmToInches(paper.widthMm),
     sheetHeight: mmToInches(paper.heightMm),
-    gap: toNumber(gap),
-    margin: toNumber(margin),
+    gap: toNumber(values.gap),
+    margin: toNumber(values.margin),
   });
   const copyText = `${result.perSheet} photos per ${paper.name} sheet`;
 
@@ -641,7 +834,7 @@ function PhotoPrintLayoutCalculator() {
         <InputField helper="Gap in inches." id="photo-gap" label="Gap" onChange={setGap} placeholder="0.125" value={gap} />
         <InputField helper="Sheet margin in inches." id="photo-margin" label="Margin" onChange={setMargin} placeholder="0.25" value={margin} />
       </div>
-      <CalculatorResult valid={result.perSheet > 0} title="Photo layout" copyText={copyText} onReset={() => { setPhotoName("4 x 6 Photo"); setPaperName("Letter"); setGap("0.125"); setMargin("0.25"); }}>
+      <CalculatorResult valid={result.perSheet > 0} title="Photo layout" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPhotoName(defaults.photoName); setPaperName(defaults.paperName); setGap(defaults.gap); setMargin(defaults.margin); submission.clear(); }}>
         <p className="text-3xl font-bold">{result.perSheet} photos</p>
         <ResultLine label="Columns x rows" value={`${result.columns} x ${result.rows}`} />
         <ResultLine label="Paper" value={paper.name} />
@@ -651,18 +844,28 @@ function PhotoPrintLayoutCalculator() {
 }
 
 function PosterTilingCalculator() {
+  const defaults = {
+    overlap: "0.25",
+    paperHeight: "11",
+    paperWidth: "8.5",
+    posterHeight: "36",
+    posterWidth: "24",
+    unit: "in" as Unit,
+  };
   const [posterWidth, setPosterWidth] = useState("24");
   const [posterHeight, setPosterHeight] = useState("36");
   const [paperWidth, setPaperWidth] = useState("8.5");
   const [paperHeight, setPaperHeight] = useState("11");
   const [overlap, setOverlap] = useState("0.25");
   const [unit, setUnit] = useState<Unit>("in");
+  const submission = useToolSubmission({ overlap, paperHeight, paperWidth, posterHeight, posterWidth, unit });
+  const values = submission.values ?? defaults;
   const result = calculatePosterTiles({
-    posterWidth: toNumber(posterWidth),
-    posterHeight: toNumber(posterHeight),
-    paperWidth: toNumber(paperWidth),
-    paperHeight: toNumber(paperHeight),
-    overlap: toNumber(overlap),
+    posterWidth: toNumber(values.posterWidth),
+    posterHeight: toNumber(values.posterHeight),
+    paperWidth: toNumber(values.paperWidth),
+    paperHeight: toNumber(values.paperHeight),
+    overlap: toNumber(values.overlap),
   });
   const copyText = `${result.totalSheets} sheets (${result.columns} x ${result.rows})`;
 
@@ -676,18 +879,21 @@ function PosterTilingCalculator() {
         <InputField helper="Paper sheet height." id="poster-paper-height" label="Paper height" onChange={setPaperHeight} placeholder="11" value={paperHeight} />
         <InputField helper="Shared overlap between sheets." id="poster-overlap" label="Overlap" onChange={setOverlap} placeholder="0.25" value={overlap} />
       </div>
-      <CalculatorResult valid={result.isValid && result.totalSheets > 0} title="Tiling result" copyText={copyText} onReset={() => { setPosterWidth("24"); setPosterHeight("36"); setPaperWidth("8.5"); setPaperHeight("11"); setOverlap("0.25"); setUnit("in"); }}>
+      <CalculatorResult valid={result.isValid && result.totalSheets > 0} title="Tiling result" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPosterWidth(defaults.posterWidth); setPosterHeight(defaults.posterHeight); setPaperWidth(defaults.paperWidth); setPaperHeight(defaults.paperHeight); setOverlap(defaults.overlap); setUnit(defaults.unit); submission.clear(); }}>
         <p className="text-3xl font-bold">{result.totalSheets} sheets</p>
         <ResultLine label="Columns x rows" value={`${result.columns} x ${result.rows}`} />
-        <ResultLine label="Effective sheet coverage" value={`${round(result.effectiveWidth, 2)} x ${round(result.effectiveHeight, 2)} ${unitLabels[unit]}`} />
+        <ResultLine label="Effective sheet coverage" value={`${round(result.effectiveWidth, 2)} x ${round(result.effectiveHeight, 2)} ${unitLabels[values.unit]}`} />
       </CalculatorResult>
     </CalculatorCard>
   );
 }
 
 function BookletPageCountCalculator() {
+  const defaults = { pages: "14" };
   const [pages, setPages] = useState("14");
-  const rawPageCount = toNumber(pages);
+  const submission = useToolSubmission({ pages });
+  const values = submission.values ?? defaults;
+  const rawPageCount = toNumber(values.pages);
   const pageCount = Math.max(1, Math.round(rawPageCount));
   const result = bookletPlan(pageCount);
   const copyText = `${result.roundedPageCount} printable pages, ${result.blanks} blank pages`;
@@ -695,7 +901,7 @@ function BookletPageCountCalculator() {
   return (
     <CalculatorCard title="Booklet Page Count Calculator" description="Check booklet page count and blank pages needed.">
       <InputField helper="Total pages in normal reading order." id="booklet-count-pages" label="Page count" onChange={setPages} placeholder="14" step={1} value={pages} />
-      <CalculatorResult valid={rawPageCount > 0} title="Booklet page count" copyText={copyText} onReset={() => setPages("14")}>
+      <CalculatorResult valid={rawPageCount > 0} title="Booklet page count" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPages(defaults.pages); submission.clear(); }}>
         <ResultLine label="Original pages" value={`${pageCount}`} />
         <ResultLine label="Printable page count" value={`${result.roundedPageCount}`} />
         <ResultLine label="Blank pages needed" value={`${result.blanks}`} />
@@ -706,8 +912,11 @@ function BookletPageCountCalculator() {
 }
 
 function BookletImpositionGuide() {
+  const defaults = { pages: "16" };
   const [pages, setPages] = useState("16");
-  const rawPageCount = toNumber(pages);
+  const submission = useToolSubmission({ pages });
+  const values = submission.values ?? defaults;
+  const rawPageCount = toNumber(values.pages);
   const pageCount = Math.max(1, Math.round(rawPageCount));
   const result = bookletPlan(pageCount);
   const copyText = `${result.roundedPageCount} pages, ${result.spreads.length} sheets`;
@@ -715,51 +924,36 @@ function BookletImpositionGuide() {
   return (
     <CalculatorCard title="Booklet Imposition Guide" description="See a simple logical page-order guide for booklet printing.">
       <InputField helper="Use total pages in reading order." id="booklet-imposition-pages" label="Page count" onChange={setPages} placeholder="16" step={1} value={pages} />
-      {rawPageCount > 0 ? (
-        <>
-          <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto]">
-            <ResultBox title="Imposition summary" tone="default">
-              <ResultLine label="Printable page count" value={`${result.roundedPageCount}`} />
-              <ResultLine label="Blank pages added" value={`${result.blanks}`} />
-              <p className="mt-3 text-sm">
-                Many printer drivers and print shops handle imposition automatically.
-                Use this as a planning guide.
-              </p>
-              <CopyButton text={copyText} />
-            </ResultBox>
-            <div className="md:self-start">
-              <ResetButton onClick={() => setPages("16")} />
-            </div>
-          </div>
-          <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200">
-            <table className="w-full min-w-[560px] text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500">
-                <tr>
-                  <th className="px-4 py-3">Sheet</th>
-                  <th className="px-4 py-3">Front side</th>
-                  <th className="px-4 py-3">Back side</th>
+      <CalculatorResult valid={rawPageCount > 0} title="Imposition summary" copyText={copyText} tone="default" hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPages(defaults.pages); submission.clear(); }}>
+        <ResultLine label="Printable page count" value={`${result.roundedPageCount}`} />
+        <ResultLine label="Blank pages added" value={`${result.blanks}`} />
+        <p className="mt-3 text-sm">
+          Many printer drivers and print shops handle imposition automatically.
+          Use this as a planning guide.
+        </p>
+      </CalculatorResult>
+      {submission.hasResult && rawPageCount > 0 ? (
+        <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200">
+          <table className="w-full min-w-[560px] text-left text-sm">
+            <thead className="bg-slate-50 text-slate-500">
+              <tr>
+                <th className="px-4 py-3">Sheet</th>
+                <th className="px-4 py-3">Front side</th>
+                <th className="px-4 py-3">Back side</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 text-slate-700">
+              {result.spreads.map((spread) => (
+                <tr key={spread.sheet}>
+                  <td className="px-4 py-3 font-medium">{spread.sheet}</td>
+                  <td className="px-4 py-3">{formatBookletPage(spread.front[0], pageCount)} | {formatBookletPage(spread.front[1], pageCount)}</td>
+                  <td className="px-4 py-3">{formatBookletPage(spread.back[0], pageCount)} | {formatBookletPage(spread.back[1], pageCount)}</td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 text-slate-700">
-                {result.spreads.map((spread) => (
-                  <tr key={spread.sheet}>
-                    <td className="px-4 py-3 font-medium">{spread.sheet}</td>
-                    <td className="px-4 py-3">{formatBookletPage(spread.front[0], pageCount)} | {formatBookletPage(spread.front[1], pageCount)}</td>
-                    <td className="px-4 py-3">{formatBookletPage(spread.back[0], pageCount)} | {formatBookletPage(spread.back[1], pageCount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      ) : (
-        <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto]">
-          <FriendlyValidation />
-          <div className="md:self-start">
-            <ResetButton onClick={() => setPages("16")} />
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+      ) : null}
     </CalculatorCard>
   );
 }
@@ -769,9 +963,12 @@ function formatBookletPage(page: number, originalCount: number) {
 }
 
 function SignatureCalculator() {
+  const defaults = { pages: "128", pagesPerSignature: "16" };
   const [pages, setPages] = useState("128");
   const [pagesPerSignature, setPagesPerSignature] = useState("16");
-  const result = calculateSignaturePlan(Math.max(1, Math.round(toNumber(pages))), Math.max(4, Math.round(toNumber(pagesPerSignature))));
+  const submission = useToolSubmission({ pages, pagesPerSignature });
+  const values = submission.values ?? defaults;
+  const result = calculateSignaturePlan(Math.max(1, Math.round(toNumber(values.pages))), Math.max(4, Math.round(toNumber(values.pagesPerSignature))));
   const copyText = `${result.signatures} signatures of ${result.pagesPerSignature} pages; ${result.blanks} blanks`;
 
   return (
@@ -780,7 +977,7 @@ function SignatureCalculator() {
         <InputField helper="Total pages in the book." id="signature-pages" label="Page count" onChange={setPages} placeholder="128" step={1} value={pages} />
         <InputField helper="Usually a multiple of four." id="signature-size" label="Pages per signature" onChange={setPagesPerSignature} placeholder="16" step={4} value={pagesPerSignature} />
       </div>
-      <CalculatorResult valid={toNumber(pages) > 0 && toNumber(pagesPerSignature) > 0} title="Signature plan" copyText={copyText} onReset={() => { setPages("128"); setPagesPerSignature("16"); }}>
+      <CalculatorResult valid={toNumber(values.pages) > 0 && toNumber(values.pagesPerSignature) > 0} title="Signature plan" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPages(defaults.pages); setPagesPerSignature(defaults.pagesPerSignature); submission.clear(); }}>
         <ResultLine label="Signatures" value={`${result.signatures}`} />
         <ResultLine label="Pages per signature" value={`${result.pagesPerSignature}`} />
         <ResultLine label="Total capacity" value={`${result.totalCapacity} pages`} />
@@ -791,16 +988,25 @@ function SignatureCalculator() {
 }
 
 function BookSpineWidthCalculator() {
+  const defaults = {
+    coverThickness: "0.25",
+    gsm: "80",
+    mode: "gsm",
+    pages: "200",
+    thickness: "0.1",
+  };
   const [pages, setPages] = useState("200");
   const [mode, setMode] = useState("gsm");
   const [gsm, setGsm] = useState("80");
   const [thickness, setThickness] = useState("0.1");
   const [coverThickness, setCoverThickness] = useState("0.25");
-  const sheetThickness = mode === "gsm" ? estimatePaperThicknessFromGsm(toNumber(gsm)) : toNumber(thickness);
+  const submission = useToolSubmission({ coverThickness, gsm, mode, pages, thickness });
+  const values = submission.values ?? defaults;
+  const sheetThickness = values.mode === "gsm" ? estimatePaperThicknessFromGsm(toNumber(values.gsm)) : toNumber(values.thickness);
   const spine = calculateSpineWidth({
-    pageCount: Math.max(1, Math.round(toNumber(pages))),
+    pageCount: Math.max(1, Math.round(toNumber(values.pages))),
     sheetThicknessMm: sheetThickness,
-    coverThicknessMm: toNumber(coverThickness),
+    coverThicknessMm: toNumber(values.coverThickness),
   });
   const copyText = `Estimated spine width: ${round(spine, 2)} mm`;
 
@@ -816,7 +1022,7 @@ function BookSpineWidthCalculator() {
         )}
         <InputField helper="One cover side thickness in mm." id="spine-cover" label="Cover thickness (mm)" onChange={setCoverThickness} placeholder="0.25" value={coverThickness} />
       </div>
-      <CalculatorResult valid={allPositive(toNumber(pages), sheetThickness)} title="Estimated spine width" copyText={copyText} onReset={() => { setPages("200"); setMode("gsm"); setGsm("80"); setThickness("0.1"); setCoverThickness("0.25"); }}>
+      <CalculatorResult valid={allPositive(toNumber(values.pages), sheetThickness)} title="Estimated spine width" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPages(defaults.pages); setMode(defaults.mode); setGsm(defaults.gsm); setThickness(defaults.thickness); setCoverThickness(defaults.coverThickness); submission.clear(); }}>
         <p className="text-3xl font-bold">{round(spine, 2)} mm</p>
         <ResultLine label="Estimated sheet thickness" value={`${round(sheetThickness, 3)} mm`} />
         <p className="mt-3 text-sm">This is only a planning estimate. Actual paper thickness varies by stock, coating, humidity, and printer.</p>
@@ -826,8 +1032,11 @@ function BookSpineWidthCalculator() {
 }
 
 function WordCounter() {
+  const defaults = { text: "" };
   const [text, setText] = useState("");
-  const result = countTextStats(text);
+  const submission = useToolSubmission({ text });
+  const values = submission.values ?? defaults;
+  const result = countTextStats(values.text);
   const copyText = `Words: ${result.words}; Characters: ${result.characters}; Characters without spaces: ${result.charactersNoSpaces}; Sentences: ${result.sentences}; Paragraphs: ${result.paragraphs}; Reading time: ${formatReadingTime(result.readingMinutes)}`;
 
   return (
@@ -847,32 +1056,37 @@ function WordCounter() {
           value={text}
         />
         <p className="mt-1.5 text-sm leading-5 text-slate-500">
-          Your text stays in your browser. Results update instantly.
+          Your text stays in your browser. Results update only after you click Start.
         </p>
       </div>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto]">
-        <ResultBox title="Text summary" tone="success">
-          <div className="grid gap-2 sm:grid-cols-2">
-            <ResultLine label="Words" value={`${result.words}`} />
-            <ResultLine label="Characters" value={`${result.characters}`} />
-            <ResultLine
-              label="Characters without spaces"
-              value={`${result.charactersNoSpaces}`}
-            />
-            <ResultLine label="Sentences" value={`${result.sentences}`} />
-            <ResultLine label="Paragraphs" value={`${result.paragraphs}`} />
-            <ResultLine
-              label="Estimated reading time"
-              value={formatReadingTime(result.readingMinutes)}
-            />
-          </div>
-          <CopyButton text={copyText} />
-        </ResultBox>
-        <div className="md:self-start">
-          <ResetButton onClick={() => setText("")} />
+      <CalculatorResult
+        copyText={copyText}
+        hasResult={submission.hasResult}
+        isProcessing={submission.isProcessing}
+        onReset={() => {
+          setText(defaults.text);
+          submission.clear();
+        }}
+        onStart={submission.submit}
+        title="Text summary"
+        valid
+      >
+        <div className="grid gap-2 sm:grid-cols-2">
+          <ResultLine label="Words" value={`${result.words}`} />
+          <ResultLine label="Characters" value={`${result.characters}`} />
+          <ResultLine
+            label="Characters without spaces"
+            value={`${result.charactersNoSpaces}`}
+          />
+          <ResultLine label="Sentences" value={`${result.sentences}`} />
+          <ResultLine label="Paragraphs" value={`${result.paragraphs}`} />
+          <ResultLine
+            label="Estimated reading time"
+            value={formatReadingTime(result.readingMinutes)}
+          />
         </div>
-      </div>
+      </CalculatorResult>
     </CalculatorCard>
   );
 }
@@ -882,19 +1096,27 @@ function CalculatorResult({
   title,
   copyText,
   children,
+  hasResult,
+  isProcessing,
   onReset,
+  onStart,
   tone = "success",
 }: {
   valid: boolean;
   title: string;
   copyText: string;
   children: React.ReactNode;
+  hasResult: boolean;
+  isProcessing: boolean;
   onReset: () => void;
+  onStart: () => void;
   tone?: "default" | "success" | "warning";
 }) {
   return (
     <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto]">
-      {valid ? (
+      {!hasResult ? (
+        <WaitingForStart />
+      ) : valid ? (
         <ResultBox title={title} tone={tone}>
           {children}
           <CopyButton text={copyText} />
@@ -902,7 +1124,8 @@ function CalculatorResult({
       ) : (
         <FriendlyValidation />
       )}
-      <div className="md:self-start">
+      <div className="flex flex-wrap gap-2 md:flex-col md:self-start">
+        <StartButton isProcessing={isProcessing} onClick={onStart} />
         <ResetButton onClick={onReset} />
       </div>
     </div>

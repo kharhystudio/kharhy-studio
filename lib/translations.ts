@@ -334,6 +334,11 @@ const jaText: Record<string, string> = {
 
   "Check your inputs": "入力を確認してください",
   "Enter positive numbers to calculate a useful result.": "有用な結果を計算するには正の数を入力してください。",
+  "Ready to calculate": "計算の準備ができました",
+  "Adjust the inputs, then click Start. Results stay unchanged until you start again.":
+    "入力を調整してから「スタート」をクリックしてください。もう一度スタートするまで結果は変わりません。",
+  Start: "スタート",
+  "Processing...": "処理中...",
   Reset: "リセット",
   "Copy result": "結果をコピー",
   Copied: "コピーしました",
@@ -486,6 +491,8 @@ const jaText: Record<string, string> = {
   "Paste or type your text here...": "ここにテキストを貼り付けるか入力してください...",
   "Your text stays in your browser. Results update instantly.":
     "テキストはブラウザー内に残ります。結果はすぐ更新されます。",
+  "Your text stays in your browser. Results update only after you click Start.":
+    "テキストはブラウザー内に残ります。結果は「スタート」をクリックした後だけ更新されます。",
   "Text summary": "テキスト概要",
   Words: "単語数",
   Characters: "文字数",
