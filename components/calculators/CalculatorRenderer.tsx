@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { CalculatorCard } from "@/components/CalculatorCard";
 import { CopyButton } from "@/components/CopyButton";
 import { InputField } from "@/components/InputField";
@@ -60,32 +60,19 @@ function allPositive(...values: number[]) {
 
 function useToolSubmission<T extends Record<string, unknown>>(draftValues: T) {
   const [submittedValues, setSubmittedValues] = useState<T | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const processingRef = useRef(false);
 
   function submit() {
-    if (processingRef.current) return;
-
-    processingRef.current = true;
-    setIsProcessing(true);
     setSubmittedValues({ ...draftValues });
-
-    window.queueMicrotask(() => {
-      processingRef.current = false;
-      setIsProcessing(false);
-    });
   }
 
   function clear() {
-    processingRef.current = false;
-    setIsProcessing(false);
     setSubmittedValues(null);
   }
 
   return {
     clear,
     hasResult: submittedValues !== null,
-    isProcessing,
+    isProcessing: false,
     submit,
     values: submittedValues,
   };

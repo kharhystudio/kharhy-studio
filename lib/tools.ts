@@ -618,7 +618,7 @@ export const tools: Tool[] = [
       "Free word counter for counting words, characters, sentences, paragraphs, and estimated reading time in your browser.",
     howToUse: [
       "Paste or type your text into the box.",
-      "Review the instant word, character, sentence, and paragraph counts.",
+      "Click Start to review the word, character, sentence, and paragraph counts.",
       "Use Reset to clear the text or Copy result to save the summary.",
     ],
     useCases: [

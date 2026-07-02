@@ -180,6 +180,8 @@ const jaText: Record<string, string> = {
   "Paste or type your text into the box.": "ボックスにテキストを貼り付けるか入力します。",
   "Review the instant word, character, sentence, and paragraph counts.":
     "単語数、文字数、文数、段落数をすぐ確認します。",
+  "Click Start to review the word, character, sentence, and paragraph counts.":
+    "「スタート」をクリックして、単語数、文字数、文数、段落数を確認します。",
   "Use Reset to clear the text or Copy result to save the summary.":
     "リセットでテキストを消去し、結果をコピーで概要を保存できます。",
   "Checking article length": "記事の長さ確認",
