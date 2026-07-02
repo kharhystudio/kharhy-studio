@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ToolCard } from "@/components/ToolCard";
+import { translateText } from "@/lib/translations";
 import type { Tool, ToolCategory } from "@/lib/tools";
 
 type HomeToolBrowserProps = {
@@ -12,18 +13,34 @@ type HomeToolBrowserProps = {
 export function HomeToolBrowser({ categories, tools }: HomeToolBrowserProps) {
   const [query, setQuery] = useState("");
 
+  const searchableTools = useMemo(() => {
+    return tools.map((tool) => {
+      const englishTerms = [
+        tool.title,
+        tool.description,
+        tool.category,
+        ...(tool.aliases ?? []),
+        ...tool.howToUse,
+        ...tool.useCases,
+      ];
+      const japaneseTerms = englishTerms.map((term) => translateText(term, "ja"));
+
+      return {
+        searchText: [...englishTerms, ...japaneseTerms].join(" ").toLowerCase(),
+        tool,
+      };
+    });
+  }, [tools]);
+
   const filteredTools = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
     if (!normalizedQuery) return tools;
 
-    return tools.filter((tool) => {
-      return [tool.title, tool.description, tool.category]
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedQuery);
-    });
-  }, [query, tools]);
+    return searchableTools
+      .filter((item) => item.searchText.includes(normalizedQuery))
+      .map((item) => item.tool);
+  }, [query, searchableTools, tools]);
 
   return (
     <section id="tools" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">

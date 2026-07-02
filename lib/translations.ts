@@ -10,9 +10,9 @@ const jaText: Record<string, string> = {
   "How it works": "使い方",
   "Choose a print tool": "印刷ツールを選ぶ",
   "Enter simple dimensions": "寸法を入力する",
-  "Use instant browser results": "ブラウザーで結果をすぐ確認する",
-  "These calculators run in your browser using typed values. They do not require account creation or file uploads.":
-    "これらの計算ツールは入力した値だけを使ってブラウザー上で動作します。アカウント作成やファイルアップロードは不要です。",
+  "Click Start to see results": "\u300c\u30b9\u30bf\u30fc\u30c8\u300d\u3092\u62bc\u3057\u3066\u7d50\u679c\u3092\u8868\u793a",
+  "These calculators run in your browser using typed values. Press Start when you are ready; no account creation or file uploads are required.":
+    "\u3053\u308c\u3089\u306e\u8a08\u7b97\u30c4\u30fc\u30eb\u306f\u5165\u529b\u3057\u305f\u5024\u3092\u4f7f\u3063\u3066\u30d6\u30e9\u30a6\u30b6\u30fc\u4e0a\u3067\u52d5\u4f5c\u3057\u307e\u3059\u3002\u6e96\u5099\u3067\u304d\u305f\u3089\u300c\u30b9\u30bf\u30fc\u30c8\u300d\u3092\u62bc\u3057\u3066\u304f\u3060\u3055\u3044\u3002\u30a2\u30ab\u30a6\u30f3\u30c8\u4f5c\u6210\u3084\u30d5\u30a1\u30a4\u30eb\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u306f\u4e0d\u8981\u3067\u3059\u3002",
   "Featured tools": "おすすめツール",
   "Start with the most common print questions": "よくある印刷の疑問から始める",
   "View all tools": "すべてのツールを見る",
@@ -155,6 +155,8 @@ const jaText: Record<string, string> = {
     "余白と間隔を使って、1ページに入るラベル数を計算します。",
   "Calculate how many photos of a selected size fit on a selected paper size.":
     "選択した写真サイズが選択した用紙に何枚入るか計算します。",
+  "This calculator compares the selected photo orientation with a rotated version and uses the layout that fits more photos.":
+    "\u3053\u306e\u8a08\u7b97\u30c4\u30fc\u30eb\u306f\u3001\u9078\u629e\u3057\u305f\u5199\u771f\u306e\u5411\u304d\u3068\u56de\u8ee2\u3057\u305f\u5411\u304d\u3092\u6bd4\u8f03\u3057\u3001\u3088\u308a\u591a\u304f\u5165\u308b\u30ec\u30a4\u30a2\u30a6\u30c8\u3092\u4f7f\u7528\u3057\u307e\u3059\u3002",
   "Count words, characters, sentences, paragraphs, and estimated reading time from pasted text.":
     "貼り付けたテキストの単語数、文字数、文数、段落数、推定読書時間を数えます。",
 
@@ -178,8 +180,6 @@ const jaText: Record<string, string> = {
   "No. The calculators use typed dimensions and run in your browser. They do not upload images or documents.":
     "いいえ。計算ツールは入力された寸法だけを使ってブラウザー上で動作し、画像や文書をアップロードしません。",
   "Paste or type your text into the box.": "ボックスにテキストを貼り付けるか入力します。",
-  "Review the instant word, character, sentence, and paragraph counts.":
-    "単語数、文字数、文数、段落数をすぐ確認します。",
   "Click Start to review the word, character, sentence, and paragraph counts.":
     "「スタート」をクリックして、単語数、文字数、文数、段落数を確認します。",
   "Use Reset to clear the text or Copy result to save the summary.":
@@ -335,15 +335,19 @@ const jaText: Record<string, string> = {
     "ワークフローによっては拡大が役立つ場合もありますが、大きな元画像に含まれる本当の細部を完全に置き換えることはできません。",
 
   "Check your inputs": "入力を確認してください",
-  "Enter positive numbers to calculate a useful result.": "有用な結果を計算するには正の数を入力してください。",
+  "Use positive sizes, zero or positive spacing/bleed/margins, and make sure the remaining area is larger than zero.":
+    "\u30b5\u30a4\u30ba\u306f\u6b63\u306e\u6570\u3001\u9593\u9694\u30fb\u5857\u308a\u8db3\u3057\u30fb\u4f59\u767d\u306f0\u4ee5\u4e0a\u306b\u3057\u3001\u6b8b\u308b\u9818\u57df\u304c0\u3088\u308a\u5927\u304d\u304f\u306a\u308b\u3088\u3046\u306b\u3057\u3066\u304f\u3060\u3055\u3044\u3002",
   "Ready to calculate": "計算の準備ができました",
   "Adjust the inputs, then click Start. Results stay unchanged until you start again.":
     "入力を調整してから「スタート」をクリックしてください。もう一度スタートするまで結果は変わりません。",
+  "Adjust the inputs, then click Start. Change values and click Start again whenever you want a fresh result.":
+    "入力を調整してから「スタート」をクリックしてください。新しい結果が必要なときは、値を変更してもう一度スタートをクリックできます。",
   Start: "スタート",
   "Processing...": "処理中...",
   Reset: "リセット",
   "Copy result": "結果をコピー",
   Copied: "コピーしました",
+  "Copy failed": "\u30b3\u30d4\u30fc\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f",
   "Calculation type": "計算タイプ",
   "Choose the direction to calculate.": "計算する方向を選びます。",
   "Pixels to print size": "ピクセルから印刷サイズ",
@@ -451,6 +455,9 @@ const jaText: Record<string, string> = {
   "Estimated area use": "推定面積使用率",
   "Photo size": "写真サイズ",
   "Photo layout": "写真レイアウト",
+  "Best orientation": "\u6700\u9069\u306a\u5411\u304d",
+  "Selected orientation": "\u9078\u629e\u3057\u305f\u5411\u304d",
+  Rotated: "\u56de\u8ee2",
   Paper: "用紙",
   "Poster width": "ポスター幅",
   "Poster height": "ポスター高さ",
@@ -491,8 +498,6 @@ const jaText: Record<string, string> = {
     "単語数、文字数、文数、段落数、推定読書時間を数えます。",
   "Text to count": "数えるテキスト",
   "Paste or type your text here...": "ここにテキストを貼り付けるか入力してください...",
-  "Your text stays in your browser. Results update instantly.":
-    "テキストはブラウザー内に残ります。結果はすぐ更新されます。",
   "Your text stays in your browser. Results update only after you click Start.":
     "テキストはブラウザー内に残ります。結果は「スタート」をクリックした後だけ更新されます。",
   "Text summary": "テキスト概要",
@@ -534,6 +539,8 @@ const jaText: Record<string, string> = {
   Overview: "概要",
   "Privacy information for Print Layout Toolkit, including browser-based calculators, future analytics, and advertising notes.":
     "ブラウザー上の計算ツール、将来のアナリティクス、広告に関するPrint Layout Toolkitのプライバシー情報です。",
+  "Print Layout Toolkit is a browser-based utility website. The calculators use the values you type into the page and show results after you press Start.":
+    "Print Layout Toolkit\u306f\u30d6\u30e9\u30a6\u30b6\u30fc\u30d9\u30fc\u30b9\u306e\u30e6\u30fc\u30c6\u30a3\u30ea\u30c6\u30a3\u30b5\u30a4\u30c8\u3067\u3059\u3002\u8a08\u7b97\u30c4\u30fc\u30eb\u306f\u30da\u30fc\u30b8\u306b\u5165\u529b\u3057\u305f\u5024\u3092\u4f7f\u3044\u3001\u300c\u30b9\u30bf\u30fc\u30c8\u300d\u3092\u62bc\u3057\u305f\u5f8c\u306b\u7d50\u679c\u3092\u8868\u793a\u3057\u307e\u3059\u3002",
   "Plain-English terms for using Print Layout Toolkit calculators and guides.":
     "Print Layout Toolkitの計算ツールとガイドを利用するためのわかりやすい利用規約です。",
   "Accessibility Statement": "アクセシビリティ声明",

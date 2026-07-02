@@ -51,18 +51,33 @@ const unitLabels: Record<Unit, string> = {
 };
 
 function toNumber(value: string) {
-  return Number(value) || 0;
+  const number = Number(value);
+
+  return Number.isFinite(number) ? number : 0;
 }
 
 function allPositive(...values: number[]) {
-  return values.every((value) => value > 0);
+  return values.every((value) => Number.isFinite(value) && value > 0);
+}
+
+function allNonNegative(...values: number[]) {
+  return values.every((value) => Number.isFinite(value) && value >= 0);
+}
+
+function blankOrPositive(value: string) {
+  return value.trim() === "" || toNumber(value) > 0;
 }
 
 function useToolSubmission<T extends Record<string, unknown>>(draftValues: T) {
-  const [submittedValues, setSubmittedValues] = useState<T | null>(null);
+  const [submittedValues, setSubmittedValues] = useState<
+    (T & { submittedAt: number }) | null
+  >(null);
 
   function submit() {
-    setSubmittedValues({ ...draftValues });
+    setSubmittedValues((currentValues) => ({
+      ...draftValues,
+      submittedAt: (currentValues?.submittedAt ?? 0) + 1,
+    }));
   }
 
   function clear() {
@@ -121,7 +136,10 @@ function ResultLine({ label, value }: { label: string; value: string }) {
 function FriendlyValidation() {
   return (
     <ResultBox title="Check your inputs" tone="warning">
-      <p>Enter positive numbers to calculate a useful result.</p>
+      <p>
+        Use positive sizes, zero or positive spacing/bleed/margins, and make
+        sure the remaining area is larger than zero.
+      </p>
     </ResultBox>
   );
 }
@@ -130,8 +148,8 @@ function WaitingForStart() {
   return (
     <ResultBox title="Ready to calculate" tone="default">
       <p>
-        Adjust the inputs, then click Start. Results stay unchanged until you
-        start again.
+        Adjust the inputs, then click Start. Change values and click Start again
+        whenever you want a fresh result.
       </p>
     </ResultBox>
   );
@@ -440,7 +458,7 @@ function AspectRatioCalculator() {
   const ratio = calculateAspectRatio(toNumber(values.width), toNumber(values.height));
   const scaledHeight = values.newWidth ? scaleFromWidth(toNumber(values.newWidth), ratio.ratioWidth, ratio.ratioHeight) : 0;
   const scaledWidth = values.newHeight ? scaleFromHeight(toNumber(values.newHeight), ratio.ratioWidth, ratio.ratioHeight) : 0;
-  const valid = Boolean(ratio.label);
+  const valid = Boolean(ratio.label) && blankOrPositive(values.newWidth) && blankOrPositive(values.newHeight);
   const copyText = `Aspect ratio: ${ratio.label}`;
 
   return (
@@ -634,6 +652,15 @@ function MarginCalculator({ safe = false }: { safe?: boolean }) {
     bottom: toNumber(values.bottom),
     left: toNumber(values.left),
   });
+  const valid =
+    allPositive(toNumber(values.width), toNumber(values.height)) &&
+    allNonNegative(
+      toNumber(values.top),
+      toNumber(values.right),
+      toNumber(values.bottom),
+      toNumber(values.left),
+    ) &&
+    result.isValid;
   const copyText = `${round(result.contentWidth, 2)} x ${round(result.contentHeight, 2)} ${unitLabels[values.unit]}`;
 
   return (
@@ -649,7 +676,7 @@ function MarginCalculator({ safe = false }: { safe?: boolean }) {
         <InputField helper="Space at the bottom." id="margin-bottom" label="Bottom margin" onChange={setBottom} placeholder="0.5" value={bottom} />
         <InputField helper="Space at the left." id="margin-left" label="Left margin" onChange={setLeft} placeholder="0.5" value={left} />
       </div>
-      <CalculatorResult valid={result.isValid} title={safe ? "Safe content area" : "Content area"} copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidth(defaults.width); setHeight(defaults.height); setUnit(defaults.unit); setTop(defaults.top); setRight(defaults.right); setBottom(defaults.bottom); setLeft(defaults.left); submission.clear(); }}>
+      <CalculatorResult valid={valid} title={safe ? "Safe content area" : "Content area"} copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidth(defaults.width); setHeight(defaults.height); setUnit(defaults.unit); setTop(defaults.top); setRight(defaults.right); setBottom(defaults.bottom); setLeft(defaults.left); submission.clear(); }}>
         <p className="text-3xl font-bold">{copyText}</p>
       </CalculatorResult>
     </CalculatorCard>
@@ -670,7 +697,7 @@ function BleedCalculator() {
   const submission = useToolSubmission({ bleed, height, unit, width });
   const values = submission.values ?? defaults;
   const result = calculateBleed(toNumber(values.width), toNumber(values.height), toNumber(values.bleed), values.unit);
-  const valid = allPositive(toNumber(values.width), toNumber(values.height));
+  const valid = allPositive(toNumber(values.width), toNumber(values.height)) && allNonNegative(toNumber(values.bleed));
   const copyText = `${round(result.totalWidth, 2)} x ${round(result.totalHeight, 2)} ${unitLabels[values.unit]} with bleed`;
 
   return (
@@ -712,6 +739,10 @@ function PrintableAreaCalculator() {
     bottom: totalInset,
     left: totalInset,
   });
+  const valid =
+    allPositive(toNumber(values.width), toNumber(values.height)) &&
+    allNonNegative(toNumber(values.margin), toNumber(values.edge)) &&
+    result.isValid;
   const copyText = `${round(result.contentWidth, 2)} x ${round(result.contentHeight, 2)} ${unitLabels[values.unit]}`;
 
   return (
@@ -723,7 +754,7 @@ function PrintableAreaCalculator() {
         <InputField helper="Your layout margin." id="printable-margin" label="Margin" onChange={setMargin} placeholder="0.5" value={margin} />
         <InputField helper="Printer edge limit." id="printable-edge" label="Non-printable edge" onChange={setEdge} placeholder="0.125" value={edge} />
       </div>
-      <CalculatorResult valid={result.isValid} title="Printable area" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidth(defaults.width); setHeight(defaults.height); setUnit(defaults.unit); setMargin(defaults.margin); setEdge(defaults.edge); submission.clear(); }}>
+      <CalculatorResult valid={valid} title="Printable area" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setWidth(defaults.width); setHeight(defaults.height); setUnit(defaults.unit); setMargin(defaults.margin); setEdge(defaults.edge); submission.clear(); }}>
         <p className="text-3xl font-bold">{copyText}</p>
         <ResultLine label="Total inset on each side" value={`${round(totalInset, 3)} ${unitLabels[values.unit]}`} />
       </CalculatorResult>
@@ -762,7 +793,14 @@ function YieldCalculator({ labelMode = "items" }: { labelMode?: "items" | "label
     gap: toNumber(values.gap),
     margin: toNumber(values.margin),
   });
-  const valid = allPositive(toNumber(values.itemWidth), toNumber(values.itemHeight), toNumber(values.sheetWidth), toNumber(values.sheetHeight));
+  const valid =
+    allPositive(
+      toNumber(values.itemWidth),
+      toNumber(values.itemHeight),
+      toNumber(values.sheetWidth),
+      toNumber(values.sheetHeight),
+    ) &&
+    allNonNegative(toNumber(values.gap), toNumber(values.margin), toNumber(values.bleed));
   const noun = labelMode === "labels" ? "labels" : labelMode === "photos" ? "photos" : "items";
   const copyText = `${result.perSheet} ${noun} per sheet (${result.columns} x ${result.rows})`;
 
@@ -803,15 +841,29 @@ function PhotoPrintLayoutCalculator() {
   const values = submission.values ?? defaults;
   const photo = photoSizes.find((item) => item.name === values.photoName) ?? photoSizes[0];
   const paper = selectedPaper(values.paperName);
-  const result = calculateNUp({
-    itemWidth: mmToInches(photo.widthMm),
-    itemHeight: mmToInches(photo.heightMm),
+  const photoWidth = mmToInches(photo.widthMm);
+  const photoHeight = mmToInches(photo.heightMm);
+  const fixedResult = calculateNUp({
+    itemWidth: photoWidth,
+    itemHeight: photoHeight,
     sheetWidth: mmToInches(paper.widthMm),
     sheetHeight: mmToInches(paper.heightMm),
     gap: toNumber(values.gap),
     margin: toNumber(values.margin),
   });
-  const copyText = `${result.perSheet} photos per ${paper.name} sheet`;
+  const rotatedResult = calculateNUp({
+    itemWidth: photoHeight,
+    itemHeight: photoWidth,
+    sheetWidth: mmToInches(paper.widthMm),
+    sheetHeight: mmToInches(paper.heightMm),
+    gap: toNumber(values.gap),
+    margin: toNumber(values.margin),
+  });
+  const usesRotation = rotatedResult.perSheet > fixedResult.perSheet;
+  const result = usesRotation ? rotatedResult : fixedResult;
+  const valid = allNonNegative(toNumber(values.gap), toNumber(values.margin));
+  const orientation = usesRotation ? "Rotated" : "Selected orientation";
+  const copyText = `${result.perSheet} photos per ${paper.name} sheet (${orientation})`;
 
   return (
     <CalculatorCard title="Photo Print Layout Calculator" description="Estimate how many common photo prints fit on a paper sheet.">
@@ -821,9 +873,10 @@ function PhotoPrintLayoutCalculator() {
         <InputField helper="Gap in inches." id="photo-gap" label="Gap" onChange={setGap} placeholder="0.125" value={gap} />
         <InputField helper="Sheet margin in inches." id="photo-margin" label="Margin" onChange={setMargin} placeholder="0.25" value={margin} />
       </div>
-      <CalculatorResult valid={result.perSheet > 0} title="Photo layout" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPhotoName(defaults.photoName); setPaperName(defaults.paperName); setGap(defaults.gap); setMargin(defaults.margin); submission.clear(); }}>
+      <CalculatorResult valid={valid && result.perSheet > 0} title="Photo layout" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPhotoName(defaults.photoName); setPaperName(defaults.paperName); setGap(defaults.gap); setMargin(defaults.margin); submission.clear(); }}>
         <p className="text-3xl font-bold">{result.perSheet} photos</p>
         <ResultLine label="Columns x rows" value={`${result.columns} x ${result.rows}`} />
+        <ResultLine label="Best orientation" value={orientation} />
         <ResultLine label="Paper" value={paper.name} />
       </CalculatorResult>
     </CalculatorCard>
@@ -854,6 +907,16 @@ function PosterTilingCalculator() {
     paperHeight: toNumber(values.paperHeight),
     overlap: toNumber(values.overlap),
   });
+  const valid =
+    allPositive(
+      toNumber(values.posterWidth),
+      toNumber(values.posterHeight),
+      toNumber(values.paperWidth),
+      toNumber(values.paperHeight),
+    ) &&
+    allNonNegative(toNumber(values.overlap)) &&
+    result.isValid &&
+    result.totalSheets > 0;
   const copyText = `${result.totalSheets} sheets (${result.columns} x ${result.rows})`;
 
   return (
@@ -866,7 +929,7 @@ function PosterTilingCalculator() {
         <InputField helper="Paper sheet height." id="poster-paper-height" label="Paper height" onChange={setPaperHeight} placeholder="11" value={paperHeight} />
         <InputField helper="Shared overlap between sheets." id="poster-overlap" label="Overlap" onChange={setOverlap} placeholder="0.25" value={overlap} />
       </div>
-      <CalculatorResult valid={result.isValid && result.totalSheets > 0} title="Tiling result" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPosterWidth(defaults.posterWidth); setPosterHeight(defaults.posterHeight); setPaperWidth(defaults.paperWidth); setPaperHeight(defaults.paperHeight); setOverlap(defaults.overlap); setUnit(defaults.unit); submission.clear(); }}>
+      <CalculatorResult valid={valid} title="Tiling result" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPosterWidth(defaults.posterWidth); setPosterHeight(defaults.posterHeight); setPaperWidth(defaults.paperWidth); setPaperHeight(defaults.paperHeight); setOverlap(defaults.overlap); setUnit(defaults.unit); submission.clear(); }}>
         <p className="text-3xl font-bold">{result.totalSheets} sheets</p>
         <ResultLine label="Columns x rows" value={`${result.columns} x ${result.rows}`} />
         <ResultLine label="Effective sheet coverage" value={`${round(result.effectiveWidth, 2)} x ${round(result.effectiveHeight, 2)} ${unitLabels[values.unit]}`} />
@@ -1009,7 +1072,7 @@ function BookSpineWidthCalculator() {
         )}
         <InputField helper="One cover side thickness in mm." id="spine-cover" label="Cover thickness (mm)" onChange={setCoverThickness} placeholder="0.25" value={coverThickness} />
       </div>
-      <CalculatorResult valid={allPositive(toNumber(values.pages), sheetThickness)} title="Estimated spine width" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPages(defaults.pages); setMode(defaults.mode); setGsm(defaults.gsm); setThickness(defaults.thickness); setCoverThickness(defaults.coverThickness); submission.clear(); }}>
+      <CalculatorResult valid={allPositive(toNumber(values.pages), sheetThickness) && allNonNegative(toNumber(values.coverThickness))} title="Estimated spine width" copyText={copyText} hasResult={submission.hasResult} isProcessing={submission.isProcessing} onStart={submission.submit} onReset={() => { setPages(defaults.pages); setMode(defaults.mode); setGsm(defaults.gsm); setThickness(defaults.thickness); setCoverThickness(defaults.coverThickness); submission.clear(); }}>
         <p className="text-3xl font-bold">{round(spine, 2)} mm</p>
         <ResultLine label="Estimated sheet thickness" value={`${round(sheetThickness, 3)} mm`} />
         <p className="mt-3 text-sm">This is only a planning estimate. Actual paper thickness varies by stock, coating, humidity, and printer.</p>

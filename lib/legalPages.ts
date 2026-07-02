@@ -64,7 +64,7 @@ export const legalPages: LegalPage[] = [
       {
         heading: "Overview",
         body: [
-          "Print Layout Toolkit is a browser-based utility website. The calculators use the values you type into the page to show results instantly.",
+          "Print Layout Toolkit is a browser-based utility website. The calculators use the values you type into the page and show results after you press Start.",
           "The site is designed so that common calculator use does not require login, account creation, file upload, or a database.",
         ],
       },

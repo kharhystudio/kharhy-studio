@@ -1,10 +1,10 @@
 export function countTextStats(text: string) {
   const trimmed = text.trim();
-  const words = trimmed ? trimmed.match(/[\p{L}\p{N}'’-]+/gu)?.length ?? 0 : 0;
+  const words = trimmed ? trimmed.match(/[\p{L}\p{N}'\u2019-]+/gu)?.length ?? 0 : 0;
   const characters = text.length;
   const charactersNoSpaces = text.replace(/\s/g, "").length;
   const sentences = trimmed
-    ? trimmed.split(/[.!?。！？]+/).filter((sentence) => sentence.trim()).length
+    ? trimmed.split(/[.!?\u3002\uff01\uff1f]+/).filter((sentence) => sentence.trim()).length
     : 0;
   const paragraphs = trimmed
     ? trimmed.split(/\n\s*\n/).filter((paragraph) => paragraph.trim()).length

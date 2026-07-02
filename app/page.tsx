@@ -83,7 +83,7 @@ export default function Home() {
               {[
                 ["1", "Choose a print tool"],
                 ["2", "Enter simple dimensions"],
-                ["3", "Use instant browser results"],
+                ["3", "Click Start to see results"],
               ].map(([number, text]) => (
                 <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-4" key={number}>
                   <span className="grid h-9 w-9 place-items-center rounded-lg bg-cyan-700 text-sm font-bold text-white">
@@ -94,8 +94,9 @@ export default function Home() {
               ))}
             </div>
             <p className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950">
-              These calculators run in your browser using typed values. They do
-              not require account creation or file uploads.
+              These calculators run in your browser using typed values. Press
+              Start when you are ready; no account creation or file uploads are
+              required.
             </p>
           </div>
         </div>

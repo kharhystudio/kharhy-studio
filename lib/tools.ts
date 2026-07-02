@@ -601,7 +601,7 @@ export const tools: Tool[] = [
     education: {
       heading: "Photo layouts depend on orientation",
       paragraphs: [
-        "This calculator keeps the selected photo orientation fixed. Try swapping width and height if rotating photos would fit better.",
+        "This calculator compares the selected photo orientation with a rotated version and uses the layout that fits more photos.",
       ],
     },
     faqs: standardFaqs.print,

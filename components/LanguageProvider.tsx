@@ -57,14 +57,30 @@ function withOriginalSpacing(original: string, translated: string) {
 function translateTextNode(node: Text, language: Language) {
   if (shouldSkip(node)) return;
 
+  const currentValue = node.nodeValue ?? "";
+
   if (!originalText.has(node)) {
-    originalText.set(node, node.nodeValue ?? "");
+    originalText.set(node, currentValue);
+  }
+
+  const storedOriginal = originalText.get(node) ?? "";
+  const storedTranslation = withOriginalSpacing(
+    storedOriginal,
+    translateText(storedOriginal, "ja"),
+  );
+
+  if (
+    currentValue !== storedOriginal &&
+    currentValue !== storedTranslation
+  ) {
+    originalText.set(node, currentValue);
   }
 
   const original = originalText.get(node) ?? "";
-  const translated = translateText(original, language);
   const nextValue =
-    language === "en" ? original : withOriginalSpacing(original, translated);
+    language === "en"
+      ? original
+      : withOriginalSpacing(original, translateText(original, language));
 
   if (node.nodeValue !== nextValue) {
     node.nodeValue = nextValue;
@@ -83,8 +99,21 @@ function translateElementAttributes(element: Element, language: Language) {
     const original = element.getAttribute(`data-${originalKey}`);
     if (!original) continue;
 
+    const translatedOriginal = translateText(original, "ja");
+
+    if (
+      current &&
+      current !== original &&
+      current !== translatedOriginal
+    ) {
+      element.setAttribute(`data-${originalKey}`, current);
+    }
+
+    const latestOriginal = element.getAttribute(`data-${originalKey}`);
+    if (!latestOriginal) continue;
+
     const nextValue =
-      language === "en" ? original : translateText(original, language);
+      language === "en" ? latestOriginal : translateText(latestOriginal, language);
 
     if (element.getAttribute(attribute) !== nextValue) {
       element.setAttribute(attribute, nextValue);
