@@ -1,10 +1,25 @@
 export function countTextStats(text: string) {
   const trimmed = text.trim();
-  const words = trimmed ? trimmed.match(/[\p{L}\p{N}'\u2019-]+/gu)?.length ?? 0 : 0;
-  const characters = text.length;
-  const charactersNoSpaces = text.replace(/\s/g, "").length;
+  const wordSegments =
+    typeof Intl !== "undefined" && "Segmenter" in Intl
+      ? Array.from(
+          new Intl.Segmenter(undefined, { granularity: "word" }).segment(text),
+        ).filter((segment) => segment.isWordLike).length
+      : trimmed.match(/[\p{L}\p{N}'\u2019-]+/gu)?.length ?? 0;
+  const graphemes =
+    typeof Intl !== "undefined" && "Segmenter" in Intl
+      ? Array.from(
+          new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text),
+          (segment) => segment.segment,
+        )
+      : Array.from(text);
+  const words = trimmed ? wordSegments : 0;
+  const characters = graphemes.length;
+  const charactersNoSpaces = graphemes.filter((grapheme) => !/^\s+$/u.test(grapheme)).length;
   const sentences = trimmed
-    ? trimmed.split(/[.!?\u3002\uff01\uff1f]+/).filter((sentence) => sentence.trim()).length
+    ? trimmed
+        .split(/[.!?\u3002\uff01\uff1f\u061f]+/u)
+        .filter((sentence) => sentence.trim()).length
     : 0;
   const paragraphs = trimmed
     ? trimmed.split(/\n\s*\n/).filter((paragraph) => paragraph.trim()).length

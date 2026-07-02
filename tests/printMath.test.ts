@@ -84,7 +84,7 @@ assert.equal(qualityVerdict(180).label, "Usable for larger prints");
 const punctuationStats = countTextStats("Printer\u2019s proof is ready.\n\n\u3053\u308c\u306f\u6587\u3067\u3059\u3002\u6b21\u306e\u6587\u3067\u3059\uff01");
 assert.equal(punctuationStats.sentences, 3);
 assert.equal(punctuationStats.paragraphs, 2);
-assert.equal(punctuationStats.words, 6);
+assert.equal(punctuationStats.words, 12);
 
 const spine = calculateSpineWidth({
   pageCount: 200,
@@ -98,5 +98,14 @@ assert.equal(textStats.words, 7);
 assert.equal(textStats.sentences, 2);
 assert.equal(textStats.paragraphs, 2);
 assert.equal(formatReadingTime(textStats.readingMinutes), "Less than 1 minute");
+
+const multilingualStats = countTextStats(
+  "Hello, world!\n\n\u65e5\u672c\u8a9e\u306e\u6587\u7ae0\u3067\u3059\u3002\u6b21\u306e\u6587\u3067\u3059\uff01\nArabic: \u0645\u0631\u062d\u0628\u0627 \u0628\u0627\u0644\u0639\u0627\u0644\u0645\u061f\nEmoji: \u{1F469}\u200D\u{1F4BB}\u{1F680} cafe\u0301 caf\u00e9 co-operate printer\u2019s proof.",
+);
+assert.equal(multilingualStats.words, 20);
+assert.equal(multilingualStats.characters, 101);
+assert.equal(multilingualStats.charactersNoSpaces, 88);
+assert.equal(multilingualStats.sentences, 5);
+assert.equal(multilingualStats.paragraphs, 2);
 
 console.log("Calculation checks passed.");
