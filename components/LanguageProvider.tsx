@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
 import { translateText, type Language } from "@/lib/translations";
 
 const storageKey = "print-layout-toolkit-language";
@@ -143,6 +144,7 @@ function translateTree(root: ParentNode, language: Language) {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [language, setLanguageState] = useState<Language>("en");
 
   useEffect(() => {
@@ -154,7 +156,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    translateTree(document.body, language);
+    const frame = window.requestAnimationFrame(() => {
+      translateTree(document.body, language);
+    });
+    const timer = window.setTimeout(() => {
+      translateTree(document.body, language);
+    }, 120);
 
     const observer = new MutationObserver(() => {
       window.requestAnimationFrame(() => translateTree(document.body, language));
@@ -168,8 +175,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       attributeFilter: translatableAttributes,
     });
 
-    return () => observer.disconnect();
-  }, [language]);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [language, pathname]);
 
   const value = useMemo<LanguageContextValue>(
     () => ({

@@ -85,7 +85,7 @@ export const legalPages: LegalPage[] = [
       {
         heading: "Contact",
         body: [
-          `Privacy questions can be sent to ${contactEmail}. Replace this placeholder email in the site configuration before publishing.`,
+          `Privacy questions can be sent to ${contactEmail}.`,
         ],
       },
     ],
