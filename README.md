@@ -29,14 +29,14 @@ npm run start
 3. Set the production URL environment variable:
 
 ```bash
-NEXT_PUBLIC_SITE_URL=https://your-domain.com
+NEXT_PUBLIC_SITE_URL=https://printlayouttoolkit.com
 ```
 
-The app defaults to `http://localhost:3000` for local development, so set `NEXT_PUBLIC_SITE_URL` before publishing.
+The app defaults to `https://printlayouttoolkit.com` so production metadata, canonical URLs, sitemap, robots.txt, and structured data do not accidentally point to localhost if the environment variable is missing. Use `NEXT_PUBLIC_SITE_URL` only when deploying a different domain.
 
 ## Custom Domain
 
-Add your custom domain in the Vercel project settings, update DNS as Vercel instructs, then set `NEXT_PUBLIC_SITE_URL` to the final `https://` domain.
+Add your custom domain in the Vercel project settings, update DNS as Vercel instructs, then set `NEXT_PUBLIC_SITE_URL` to the final `https://` domain if it is different from `https://printlayouttoolkit.com`.
 
 ## Contact Email
 

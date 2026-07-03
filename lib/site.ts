@@ -1,6 +1,6 @@
 export const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "http://localhost:3000";
+  "https://printlayouttoolkit.com";
 
 // Replace this address before publishing if you want visitor email to go elsewhere.
 export const contactEmail =
