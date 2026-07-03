@@ -30,7 +30,9 @@ export function ThemeSwitcher() {
             onClick={() => setTheme(item.value)}
             type="button"
           >
-            {item.label}
+            <span className="inline-flex min-h-8 items-center">
+              {item.label}
+            </span>
           </button>
         );
       })}

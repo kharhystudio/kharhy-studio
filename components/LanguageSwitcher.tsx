@@ -32,7 +32,9 @@ export function LanguageSwitcher() {
             onClick={() => setLanguage(item.value)}
             type="button"
           >
-            {item.label}
+            <span className="inline-flex min-h-8 items-center">
+              {item.label}
+            </span>
           </button>
         );
       })}
