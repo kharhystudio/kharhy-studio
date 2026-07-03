@@ -23,6 +23,10 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
   if (!tool) {
     return {
       title: "Tool not found",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 

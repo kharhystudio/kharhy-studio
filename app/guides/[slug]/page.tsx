@@ -23,6 +23,10 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
   if (!guide) {
     return {
       title: "Guide not found",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 

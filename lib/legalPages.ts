@@ -4,6 +4,7 @@ export type LegalPage = {
   slug: string;
   title: string;
   description: string;
+  lastUpdated?: string;
   sections: {
     heading: string;
     body: string[];
@@ -17,12 +18,20 @@ export const legalPages: LegalPage[] = [
     title: "About Print Layout Toolkit",
     description:
       "Learn about Print Layout Toolkit, a browser-based collection of practical print calculators and guides.",
+    lastUpdated: "July 3, 2026",
     sections: [
       {
         heading: "What this site does",
         body: [
           "Print Layout Toolkit provides simple calculators and reference guides for common print-layout tasks, including DPI, paper sizes, margins, bleed, booklets, posters, labels, and image sizing.",
           "The goal is to make print planning easier for students, small businesses, designers, creators, and anyone preparing files for home printing or a print shop.",
+        ],
+      },
+      {
+        heading: "Who it is for",
+        body: [
+          "The site is built for people who need quick, practical answers while preparing layouts, images, booklets, posters, labels, written copy, or other print-ready files.",
+          "It is useful for early planning, checking assumptions, and learning print terms before confirming final specifications with a printer or production partner.",
         ],
       },
       {
@@ -39,6 +48,7 @@ export const legalPages: LegalPage[] = [
     title: "Contact",
     description:
       "Contact Print Layout Toolkit for corrections, accessibility issues, and practical feedback.",
+    lastUpdated: "July 3, 2026",
     sections: [
       {
         heading: "Email",
@@ -60,6 +70,7 @@ export const legalPages: LegalPage[] = [
     title: "Privacy Policy",
     description:
       "Privacy information for Print Layout Toolkit, including browser-based calculators, future analytics, and advertising notes.",
+    lastUpdated: "July 3, 2026",
     sections: [
       {
         heading: "Overview",
@@ -69,17 +80,49 @@ export const legalPages: LegalPage[] = [
         ],
       },
       {
-        heading: "Information you enter",
+        heading: "Information you enter into tools",
         body: [
           "Calculator values are processed in your browser. They are not intentionally saved by this website or sent to a custom backend database.",
           "If a future tool clearly requires file upload or server processing, that tool should explain what is uploaded before you use it.",
         ],
       },
       {
+        heading: "Contact email",
+        body: [
+          "The Contact page provides an email address instead of a contact form. If you send an email, your message, email address, and any details you include are handled by your email provider and the receiving inbox.",
+        ],
+      },
+      {
         heading: "Hosting, logs, analytics, and ads",
         body: [
           "Like most websites, the hosting provider may process basic technical information such as IP address, browser type, requested pages, timestamps, and error logs for security and reliability.",
-          "Google Analytics, Google Search Console, or Google AdSense may be added later through environment variables. If analytics or advertising is enabled, this policy should be updated to describe those services and any cookies or identifiers they use.",
+          "Google Search Console may be used to understand search visibility. Google Analytics or Google AdSense may be added later through environment variables. If analytics or advertising is enabled, this policy should be updated to describe those services and any cookies or identifiers they use.",
+          "If advertising is enabled later, third-party vendors, including Google, may use cookies or similar technologies to serve and measure ads based on visits to this and other websites.",
+        ],
+      },
+      {
+        heading: "Cookies and local storage",
+        body: [
+          "The site may use local storage or similar browser storage to remember preferences such as language, theme, and cookie notice acknowledgement.",
+          "If analytics or advertising tools are added later, they may use cookies for measurement, fraud prevention, personalization, or ad delivery. You can control cookies through your browser settings and any consent controls shown on the site.",
+        ],
+      },
+      {
+        heading: "External links",
+        body: [
+          "Some pages may link to external websites or services for reference. Those websites have their own privacy practices and are not controlled by Print Layout Toolkit.",
+        ],
+      },
+      {
+        heading: "Children",
+        body: [
+          "This site is intended as a general print-layout utility and is not directed to children. Do not send personal information through email if you are not allowed to do so.",
+        ],
+      },
+      {
+        heading: "Policy updates",
+        body: [
+          "This policy may be updated as the website changes, especially if analytics, advertising, new tools, or third-party services are added.",
         ],
       },
       {
@@ -95,9 +138,17 @@ export const legalPages: LegalPage[] = [
     title: "Terms of Service",
     description:
       "Plain-English terms for using Print Layout Toolkit calculators and guides.",
+    lastUpdated: "July 3, 2026",
     sections: [
       {
-        heading: "Educational use",
+        heading: "Using this website",
+        body: [
+          "By using Print Layout Toolkit, you agree to use the calculators, guides, and reference pages responsibly and only for lawful purposes.",
+          "You may not misuse the site, interfere with its operation, attempt to access systems that are not public, or use automated traffic in a way that harms availability for other visitors.",
+        ],
+      },
+      {
+        heading: "Informational tools",
         body: [
           "Print Layout Toolkit provides calculators and guides for general educational and planning purposes.",
           "The results may help you estimate sizes, page counts, margins, bleed, resolution, and layout needs, but they are not a guarantee that a file is suitable for every printer, paper stock, binding method, or professional print job.",
@@ -110,9 +161,40 @@ export const legalPages: LegalPage[] = [
         ],
       },
       {
+        heading: "Intellectual property",
+        body: [
+          "The website design, text, calculator structure, and original content belong to Print Layout Toolkit or its owner unless otherwise stated.",
+          "You may use calculator results for your own projects, but you may not copy or republish the website as a competing service without permission.",
+        ],
+      },
+      {
+        heading: "Third-party links",
+        body: [
+          "The website may link to third-party resources. Those links are provided for convenience, and Print Layout Toolkit is not responsible for third-party content, policies, or services.",
+        ],
+      },
+      {
         heading: "No warranty",
         body: [
           "The site is provided as-is. We try to keep the tools accurate and useful, but we do not promise that every calculation, guide, or result will be error-free or appropriate for your specific project.",
+        ],
+      },
+      {
+        heading: "Limitation of liability",
+        body: [
+          "To the fullest extent allowed by applicable law, Print Layout Toolkit is not responsible for printing costs, production mistakes, missed deadlines, business losses, or other damages that result from relying only on website calculations.",
+        ],
+      },
+      {
+        heading: "Changes to the service",
+        body: [
+          "The website, tools, guides, and terms may be changed over time. Continued use of the site after updates means you accept the updated terms.",
+        ],
+      },
+      {
+        heading: "Contact",
+        body: [
+          `Questions about these terms can be sent to ${contactEmail}.`,
         ],
       },
     ],
@@ -122,6 +204,7 @@ export const legalPages: LegalPage[] = [
     title: "Accessibility Statement",
     description:
       "Accessibility statement for Print Layout Toolkit and contact information for reporting issues.",
+    lastUpdated: "July 3, 2026",
     sections: [
       {
         heading: "Our effort",

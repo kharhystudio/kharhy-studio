@@ -81,6 +81,8 @@ NEXT_PUBLIC_ADSENSE_PUBLISHER_ID=ca-pub-XXXXXXXXXXXXXXXX
 
 No ad blocks or placeholders are included. Update the Privacy Policy before enabling ads.
 
+The site includes a lightweight cookie notice in `components/CookieNotice.tsx`. It stores acknowledgement in localStorage and links to the Privacy Policy. Review the Privacy Policy and Terms of Service with a qualified human reviewer before public launch, especially before enabling analytics or advertising.
+
 ## Main Routes
 
 - `/`
@@ -143,6 +145,7 @@ Older compatibility routes under `/guides/[slug]` also work, but the canonical U
 - `app/guides/page.tsx` - all guides directory
 - `components/calculators/CalculatorRenderer.tsx` - all interactive calculators
 - `components/pages/` - shared page layouts
+- `components/CookieNotice.tsx` - localStorage-based cookie notice
 - `lib/tools.ts` - tool metadata
 - `lib/guides.ts` - guide content
 - `lib/legalPages.ts` - trust and legal page content

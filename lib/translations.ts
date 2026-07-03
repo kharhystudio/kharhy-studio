@@ -916,6 +916,72 @@ Object.assign(
   } satisfies Record<string, string>,
 );
 
+Object.assign(
+  jaText,
+  {
+    "Cookie notice": "Cookieに関するお知らせ",
+    "Print Layout Toolkit uses local storage for language, theme, and cookie choices. If analytics or ads are enabled later, cookies may be used for measurement and third-party advertising, including Google.":
+      "Print Layout Toolkitは、言語、テーマ、Cookie選択の保存にローカルストレージを使用します。今後、解析や広告を有効にした場合、測定やGoogleを含む第三者広告のためにCookieが使われることがあります。",
+    Accept: "同意する",
+    "Last updated:": "最終更新日:",
+    "July 3, 2026": "2026年7月3日",
+    "Who it is for": "このサイトが役立つ人",
+    "The site is built for people who need quick, practical answers while preparing layouts, images, booklets, posters, labels, written copy, or other print-ready files.":
+      "このサイトは、レイアウト、画像、小冊子、ポスター、ラベル、文章、その他の印刷用データを準備するときに、すばやく実用的な答えが必要な人のために作られています。",
+    "It is useful for early planning, checking assumptions, and learning print terms before confirming final specifications with a printer or production partner.":
+      "印刷会社や制作パートナーと最終仕様を確認する前の初期計画、前提条件の確認、印刷用語の学習に役立ちます。",
+    "Information you enter into tools": "ツールに入力する情報",
+    "Contact email": "連絡先メール",
+    "The Contact page provides an email address instead of a contact form. If you send an email, your message, email address, and any details you include are handled by your email provider and the receiving inbox.":
+      "お問い合わせページでは、送信できないフォームではなくメールアドレスを掲載しています。メールを送る場合、本文、メールアドレス、記載した情報は、利用しているメールサービスと受信側のメールボックスで扱われます。",
+    "Google Search Console may be used to understand search visibility. Google Analytics or Google AdSense may be added later through environment variables. If analytics or advertising is enabled, this policy should be updated to describe those services and any cookies or identifiers they use.":
+      "検索での表示状況を確認するためにGoogle Search Consoleを使用する場合があります。Google アナリティクスやGoogle AdSenseは、後から環境変数で追加される場合があります。解析や広告を有効にする場合は、それらのサービスと使用されるCookieや識別子について、このポリシーを更新する必要があります。",
+    "If advertising is enabled later, third-party vendors, including Google, may use cookies or similar technologies to serve and measure ads based on visits to this and other websites.":
+      "今後広告を有効にした場合、Googleを含む第三者事業者が、このサイトや他のサイトへの訪問情報に基づいて広告の配信や測定を行うため、Cookieや類似技術を使用することがあります。",
+    "Cookies and local storage": "Cookieとローカルストレージ",
+    "The site may use local storage or similar browser storage to remember preferences such as language, theme, and cookie notice acknowledgement.":
+      "このサイトは、言語、テーマ、Cookie通知への同意などの設定を保存するために、ローカルストレージまたは同様のブラウザー保存機能を使用する場合があります。",
+    "If analytics or advertising tools are added later, they may use cookies for measurement, fraud prevention, personalization, or ad delivery. You can control cookies through your browser settings and any consent controls shown on the site.":
+      "今後、解析ツールや広告ツールを追加した場合、測定、不正防止、パーソナライズ、広告配信のためにCookieが使われることがあります。Cookieはブラウザー設定やサイト上に表示される同意管理で調整できます。",
+    "External links": "外部リンク",
+    "Some pages may link to external websites or services for reference. Those websites have their own privacy practices and are not controlled by Print Layout Toolkit.":
+      "一部のページには参考として外部サイトやサービスへのリンクが含まれる場合があります。それらのサイトには独自のプライバシー方針があり、Print Layout Toolkitが管理するものではありません。",
+    Children: "子どもについて",
+    "This site is intended as a general print-layout utility and is not directed to children. Do not send personal information through email if you are not allowed to do so.":
+      "このサイトは一般的な印刷レイアウト用ユーティリティであり、子どもを対象にしたものではありません。許可されていない場合は、メールで個人情報を送らないでください。",
+    "Policy updates": "ポリシーの更新",
+    "This policy may be updated as the website changes, especially if analytics, advertising, new tools, or third-party services are added.":
+      "このポリシーは、サイトの変更に応じて更新される場合があります。特に解析、広告、新しいツール、第三者サービスを追加する場合に更新が必要です。",
+    "Using this website": "このウェブサイトの利用",
+    "By using Print Layout Toolkit, you agree to use the calculators, guides, and reference pages responsibly and only for lawful purposes.":
+      "Print Layout Toolkitを利用することで、計算ツール、ガイド、参考ページを責任を持って合法的な目的にのみ使用することに同意したものとします。",
+    "You may not misuse the site, interfere with its operation, attempt to access systems that are not public, or use automated traffic in a way that harms availability for other visitors.":
+      "サイトを不正利用したり、運営を妨害したり、公開されていないシステムへアクセスを試みたり、他の利用者の利用を妨げる自動アクセスを行ったりしてはいけません。",
+    "Informational tools": "情報提供用ツール",
+    "Intellectual property": "知的財産",
+    "The website design, text, calculator structure, and original content belong to Print Layout Toolkit or its owner unless otherwise stated.":
+      "特に明記されていない限り、サイトのデザイン、文章、計算ツールの構成、独自コンテンツはPrint Layout Toolkitまたはその所有者に属します。",
+    "You may use calculator results for your own projects, but you may not copy or republish the website as a competing service without permission.":
+      "計算結果は自分のプロジェクトに利用できますが、許可なくこのウェブサイトをコピーしたり、競合サービスとして再公開したりすることはできません。",
+    "Third-party links": "第三者リンク",
+    "The website may link to third-party resources. Those links are provided for convenience, and Print Layout Toolkit is not responsible for third-party content, policies, or services.":
+      "このウェブサイトは第三者の資料へリンクする場合があります。これらのリンクは利便性のために提供されており、Print Layout Toolkitは第三者のコンテンツ、方針、サービスについて責任を負いません。",
+    "Limitation of liability": "責任の制限",
+    "To the fullest extent allowed by applicable law, Print Layout Toolkit is not responsible for printing costs, production mistakes, missed deadlines, business losses, or other damages that result from relying only on website calculations.":
+      "適用法で認められる最大限の範囲で、Print Layout Toolkitは、このサイトの計算結果だけに依存したことによる印刷費用、制作ミス、納期遅延、事業上の損失、その他の損害について責任を負いません。",
+    "Changes to the service": "サービスの変更",
+    "The website, tools, guides, and terms may be changed over time. Continued use of the site after updates means you accept the updated terms.":
+      "ウェブサイト、ツール、ガイド、利用規約は時間とともに変更される場合があります。更新後もサイトを利用し続ける場合、更新された規約に同意したものとみなされます。",
+    "Questions about these terms can be sent to kharhystudio@gmail.com.":
+      "この規約に関する質問は kharhystudio@gmail.com まで送信できます。",
+    "Page not found": "ページが見つかりません",
+    "We could not find that page.": "そのページは見つかりませんでした。",
+    "The page may have moved, or the address may be incorrect. You can go back to the homepage or browse all print tools.":
+      "ページが移動したか、アドレスが間違っている可能性があります。ホームページに戻るか、すべての印刷ツールを確認できます。",
+    "Go home": "ホームへ戻る",
+  } satisfies Record<string, string>,
+);
+
 const dynamicReplacements: Array<[RegExp, string]> = [
   [/\bImage & DPI\b/g, "画像とDPI"],
   [/\bPaper & Layout\b/g, "用紙とレイアウト"],

@@ -58,6 +58,10 @@ export async function generateMetadata({
 
   return {
     title: "Page not found",
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 

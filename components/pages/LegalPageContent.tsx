@@ -44,6 +44,11 @@ export function LegalPageContent({ page }: LegalPageContentProps) {
           {page.title}
         </h1>
         <p className="mt-4 text-lg leading-8 text-slate-600">{page.description}</p>
+        {page.lastUpdated ? (
+          <p className="mt-3 text-sm font-medium text-slate-500">
+            Last updated: {page.lastUpdated}
+          </p>
+        ) : null}
 
         <div className="mt-8 space-y-8">
           {page.sections.map((section) => (
